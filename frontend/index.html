@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AyurCTMS — All India Institute of Ayurveda Clinical Trials Portal</title>
+  <meta name="description" content="Secure clinical trials management system for Ayurveda research. Compliant with Ministry of AYUSH GCP-ASU, DPDP Act 2023, and CERT-In Directions 2022.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body class="theme-light">
+
+  <!-- Top Notification & Government Sync Bar -->
+  <header class="top-bar" id="gov-sync-bar">
+    <div class="top-bar-container">
+      <div class="sync-status">
+        <span class="pulse-dot"></span>
+        <span><strong>AIIA Trial Platform:</strong> Connected to Supabase • Clocks: <code id="ntp-status-clock">time.nic.in (NTP)</code> • Mumbai Region (ap-south-1)</span>
+      </div>
+      <div class="top-bar-actions">
+        <span class="db-status-badge" id="db-status-badge">Supabase Connected</span>
+        <button id="theme-toggle-btn" class="btn-text" aria-label="Toggle Theme">🌙 Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global Application Header -->
+  <header class="app-header" id="global-header">
+    <div class="header-container">
+      <a href="#landing" class="logo-group" id="logo-link">
+        <div class="logo-emblem">🌿</div>
+        <div>
+          <span class="logo-title">AyurCTMS</span>
+          <span class="logo-sub">All India Institute of Ayurveda</span>
+        </div>
+      </a>
+
+      <!-- Guest Navigation (Shown when logged out) -->
+      <div class="nav-guest" id="nav-guest">
+        <a href="#landing" class="nav-link">Home</a>
+        <a href="#register" class="nav-link">Register</a>
+        <a href="#login" class="btn btn-primary" id="btn-nav-signin">Sign in</a>
+      </div>
+
+      <!-- Authenticated User Top Bar (Shown when logged in) -->
+      <div class="nav-auth hidden" id="nav-auth">
+        <div class="user-meta-pill">
+          <span class="role-badge" id="auth-role-badge">Principal Investigator</span>
+          <span class="user-name" id="auth-user-name">Prof. Sharma</span>
+          <span class="site-tag" id="auth-site-tag">SITE-01</span>
+        </div>
+        <button id="btn-global-signout" class="btn btn-outline-danger">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global Toast Alerts -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Inactivity Warning Banner (Hidden by default) -->
+  <div id="inactivity-warning-banner" class="alert-banner warning hidden">
+    ⚠️ <strong>Session Warning:</strong> You will be logged out due to inactivity in <span id="inactivity-countdown">60</span> seconds. Move your mouse or click anywhere to stay active.
+  </div>
+
+  <!-- ======================================================================
+       PAGE 1: LANDING PAGE (`#landing`)
+       ====================================================================== -->
+  <main id="view-landing" class="view-container active">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-badge">Ministry of AYUSH • GCP-ASU & DPDP 2025 Compliant</div>
+      <h1 class="hero-title">One secure place to manage Ayurveda clinical trials.</h1>
+      <p class="hero-subtitle">
+        Purpose-built for investigators, coordinators, ethics committees, and regulators to manage classical protocol regimens, patient consent, and tamper-proof trial data.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#login" class="btn btn-primary btn-lg">Sign in to your dashboard</a>
+        <a href="#register" class="btn btn-secondary btn-lg">Register new account</a>
+      </div>
+    </section>
+
+    <!-- Role Selection Section (9 Cards) -->
+    <section class="role-selection-section">
+      <div class="section-title-wrap">
+        <h2>Select your trial role to sign in</h2>
+        <p>Pick your authorized responsibility. You can change your account credentials on the next screen.</p>
+      </div>
+
+      <div class="role-cards-grid" id="role-cards-grid">
+        <!-- 1. Principal Investigator -->
+        <div class="role-card" data-role="Principal Investigator">
+          <div class="role-icon">🩺</div>
+          <h3 class="role-name">Principal Investigator</h3>
+          <p class="role-desc">Protocol design, clinical oversight, safety review, and regulatory sign-offs.</p>
+          <span class="role-link">Sign in as PI &rarr;</span>
+        </div>
+
+        <!-- 2. Research Coordinator -->
+        <div class="role-card" data-role="Research Coordinator">
+          <div class="role-icon">📋</div>
+          <h3 class="role-name">Research Coordinator</h3>
+          <p class="role-desc">Subject enrolment, consent forms, CRF entry, and dosing schedules.</p>
+          <span class="role-link">Sign in as Coordinator &rarr;</span>
+        </div>
+
+        <!-- 3. Doctor / Investigator -->
+        <div class="role-card" data-role="Doctor / Investigator">
+          <div class="role-icon">👨‍⚕️</div>
+          <h3 class="role-name">Doctor / Investigator</h3>
+          <p class="role-desc">Clinical examination, Prakriti scoring, and ASU adverse drug reaction logging.</p>
+          <span class="role-link">Sign in as Doctor &rarr;</span>
+        </div>
+
+        <!-- 4. Monitor (CRA) -->
+        <div class="role-card" data-role="Monitor">
+          <div class="role-icon">🔍</div>
+          <h3 class="role-name">Monitor</h3>
+          <p class="role-desc">Source data verification, visit reports, and protocol deviation tracking.</p>
+          <span class="role-link">Sign in as Monitor &rarr;</span>
+        </div>
+
+        <!-- 5. EC Member -->
+        <div class="role-card" data-role="EC Member">
+          <div class="role-icon">⚖️</div>
+          <h3 class="role-name">EC Member</h3>
+          <p class="role-desc">Ethics committee approval, annual protocol renewal, and SAE reviews.</p>
+          <span class="role-link">Sign in as EC Member &rarr;</span>
+        </div>
+
+        <!-- 6. PV Officer -->
+        <div class="role-card" data-role="PV Officer">
+          <div class="role-icon">🛡️</div>
+          <h3 class="role-name">PV Officer</h3>
+          <p class="role-desc">Pharmacovigilance signals, MedDRA/ASU coding, and DSMB reports.</p>
+          <span class="role-link">Sign in as PV Officer &rarr;</span>
+        </div>
+
+        <!-- 7. Admin -->
+        <div class="role-card" data-role="Admin">
+          <div class="role-icon">⚙️</div>
+          <h3 class="role-name">Admin</h3>
+          <p class="role-desc">User account approvals, site configuration, CERT-In Point of Contact.</p>
+          <span class="role-link">Sign in as Admin &rarr;</span>
+        </div>
+
+        <!-- 8. Auditor / Regulator -->
+        <div class="role-card" data-role="Auditor / Regulator">
+          <div class="role-icon">📜</div>
+          <h3 class="role-name">Auditor / Regulator</h3>
+          <p class="role-desc">Independent read-only audit trail and SHA-256 cryptographic chain inspection.</p>
+          <span class="role-link">Sign in as Auditor &rarr;</span>
+        </div>
+
+        <!-- 9. Institution Leadership -->
+        <div class="role-card" data-role="Institution Leadership">
+          <div class="role-icon">🏛️</div>
+          <h3 class="role-name">Institution Leadership</h3>
+          <p class="role-desc">Portfolio health index, recruitment KPIs, and aggregated risk analytics.</p>
+          <span class="role-link">Sign in as Leadership &rarr;</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Synthetic Demo Accounts Cheatsheet -->
+    <section class="demo-accounts-section">
+      <div class="demo-sheet-card">
+        <div class="demo-sheet-header">
+          <div>
+            <h3>Pre-configured Demonstration Accounts</h3>
+            <p>For testing without real credentials. Demo OTP code is always <code>123456</code>.</p>
+          </div>
+          <span class="badge badge-info">Demo Mode Active</span>
+        </div>
+        <div class="demo-grid">
+          <button class="demo-pill" onclick="quickFillDemo('pi@ayurctms.demo', 'Pi@Demo#2026', 'Principal Investigator')">🩺 <strong>PI:</strong> pi@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('coordinator@ayurctms.demo', 'Coord@Demo#2026', 'Research Coordinator')">📋 <strong>Coord:</strong> coordinator@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('doctor@ayurctms.demo', 'Doctor@Demo#2026', 'Doctor / Investigator')">👨‍⚕️ <strong>Doctor:</strong> doctor@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('monitor@ayurctms.demo', 'Monitor@Demo#2026', 'Monitor')">🔍 <strong>Monitor:</strong> monitor@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('ec@ayurctms.demo', 'Ethics@Demo#2026', 'EC Member')">⚖️ <strong>EC:</strong> ec@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('pv@ayurctms.demo', 'Pharma@Demo#2026', 'PV Officer')">🛡️ <strong>PV:</strong> pv@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('admin@ayurctms.demo', 'Admin@Demo#2026', 'Admin')">⚙️ <strong>Admin:</strong> admin@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('auditor@ayurctms.demo', 'Audit@Demo#2026', 'Auditor / Regulator')">📜 <strong>Auditor:</strong> auditor@ayurctms.demo</button>
+          <button class="demo-pill" onclick="quickFillDemo('leader@ayurctms.demo', 'Leader@Demo#2026', 'Institution Leadership')">🏛️ <strong>Leadership:</strong> leader@ayurctms.demo</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================================================================
+       PAGE 2: REGISTRATION (`#register`)
+       ====================================================================== -->
+  <main id="view-register" class="view-container">
+    <div class="auth-card-container">
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <span class="auth-step-pill">Account Creation</span>
+          <h2>Register for AyurCTMS</h2>
+          <p>New accounts start as <strong>Pending approval</strong>. An Admin approves your verified role.</p>
+        </div>
+
+        <form id="form-register" class="auth-form" novalidate>
+          <div class="form-group">
+            <label for="reg-fullname">Full Name <span class="req">*</span></label>
+            <input type="text" id="reg-fullname" class="form-control" placeholder="Dr. Firstname Lastname" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-email">Official / Institutional Email <span class="req">*</span></label>
+              <input type="email" id="reg-email" class="form-control" placeholder="name@aiia.gov.in" required>
+            </div>
+            <div class="form-group">
+              <label for="reg-phone">Phone Number <span class="req">*</span></label>
+              <input type="tel" id="reg-phone" class="form-control" placeholder="+91-9876543210" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-role">Requested Role <span class="req">*</span></label>
+              <select id="reg-role" class="form-control" required>
+                <option value="Research Coordinator" selected>Research Coordinator</option>
+                <option value="Doctor / Investigator">Doctor / Investigator</option>
+                <option value="Monitor">Monitor (CRA)</option>
+                <option value="EC Member">Ethics Committee Member</option>
+                <option value="PV Officer">Pharmacovigilance Officer</option>
+                <option value="Auditor / Regulator">Auditor / Regulator</option>
+                <option value="Institution Leadership">Institution Leadership</option>
+              </select>
+              <small class="hint-text">Note: Admin and Principal Investigator accounts must be assigned directly by an administrator.</small>
+            </div>
+            <div class="form-group">
+              <label for="reg-site">Site / Department <span class="req">*</span></label>
+              <input type="text" id="reg-site" class="form-control" value="SITE-01 (AIIA New Delhi)" required>
+            </div>
+          </div>
+
+          <!-- Password with Strength Meter -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-password">Password (Minimum 12 characters) <span class="req">*</span></label>
+              <input type="password" id="reg-password" class="form-control" placeholder="••••••••••••" required>
+              <div class="strength-meter-wrap">
+                <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
+                <span class="strength-text" id="strength-text">Minimum 12 characters, uppercase, lowercase, number, symbol</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reg-confirm-password">Confirm Password <span class="req">*</span></label>
+              <input type="password" id="reg-confirm-password" class="form-control" placeholder="••••••••••••" required>
+            </div>
+          </div>
+
+          <!-- Standalone DPDP Privacy Notice (Unticked by default) -->
+          <div class="privacy-consent-box">
+            <h4>Data Principal Notice (DPDP Act 2023 & Rules 2025)</h4>
+            <p>
+              AyurCTMS collects your name, professional email, phone number, and site affiliation strictly for user authentication, role assignment, and immutable clinical trial audit logging. Your information is stored domestically within India (Mumbai region) and is never shared for commercial tracking.
+            </p>
+            <label class="consent-checkbox-label">
+              <input type="checkbox" id="reg-privacy-consent">
+              <span><strong>I have read and consent to the AyurCTMS Privacy Notice</strong> (Mandatory to register).</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-register">Submit Registration</button>
+        </form>
+
+        <!-- Registration Success Notice -->
+        <div id="register-success-box" class="alert-box success hidden">
+          <h4>Registration received!</h4>
+          <p>An administrator will review your credentials and approve your account. Once approved, you can sign in with your password and 2FA code.</p>
+          <a href="#login" class="btn btn-primary" style="margin-top: 10px;">Go to Sign in</a>
+        </div>
+
+        <div class="auth-footer-link">
+          Already have an account? <a href="#login">Sign in here</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================================================================
+       PAGE 3: LOGIN & SECURITY VERIFICATION (`#login`)
+       ====================================================================== -->
+  <main id="view-login" class="view-container">
+    <div class="auth-card-container">
+      <div class="auth-card">
+        
+        <!-- Step 1: Role, Email, Password -->
+        <div id="login-step-1">
+          <div class="auth-card-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="auth-step-pill">Step 1 of 2</span>
+              <!-- Demo mode badge (controlled by NEXT_PUBLIC_DEMO_MODE) -->
+              <span id="login-demo-badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(16, 185, 129, 0.3);">⚡ Demo mode</span>
+            </div>
+            <h2>Sign in to AyurCTMS</h2>
+            <p>Select your authorized role and enter your institutional credentials.</p>
+          </div>
+
+          <form id="form-login-step1" class="auth-form">
+            <div class="form-group">
+              <label for="login-role">Assigned Trial Role <span class="req">*</span></label>
+              <select id="login-role" class="form-control" required>
+                <option value="Principal Investigator">Principal Investigator</option>
+                <option value="Research Coordinator" selected>Research Coordinator</option>
+                <option value="Doctor / Investigator">Doctor / Investigator</option>
+                <option value="Monitor">Monitor (CRA)</option>
+                <option value="EC Member">Ethics Committee Member</option>
+                <option value="PV Officer">Pharmacovigilance Officer</option>
+                <option value="Admin">Admin</option>
+                <option value="Auditor / Regulator">Auditor / Regulator</option>
+                <option value="Institution Leadership">Institution Leadership</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="login-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="login-email" class="form-control" placeholder="coordinator@ayurctms.demo" required>
+            </div>
+
+            <div class="form-group">
+              <label for="login-password">Password <span class="req">*</span></label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••••••" required>
+            </div>
+
+            <!-- Demo Access Hint Box (DEMO ONLY, remove before real use) -->
+            <div id="demo-access-hint-box" style="margin: -4px 0 16px 0; padding: 10px 14px; background: var(--bg-card-subtle, #f8fafc); border: 1px dashed var(--border-color, #cbd5e1); border-radius: 6px; font-size: 0.82rem; color: var(--text-muted, #64748b);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: var(--text-main, #0f172a); font-size: 0.82rem;">Demo access</strong>
+                <button type="button" id="btn-fill-demo-details" class="btn-text" style="font-size: 0.78rem; color: var(--primary, #059669); padding: 0; text-decoration: underline; cursor: pointer; font-weight: 500;">Fill demo details</button>
+              </div>
+              <ul style="margin: 0; padding-left: 18px; line-height: 1.5; color: var(--text-muted, #64748b);">
+                <li>Use any email</li>
+                <li>Password: <code>Demo@2026</code></li>
+                <li>Verification code: <code>123456</code></li>
+              </ul>
+            </div>
+
+            <div id="login-error-msg" class="error-msg-box hidden"></div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-proceed-step1">Continue to 2FA Verification &rarr;</button>
+          </form>
+
+          <div class="auth-footer-link">
+            Need an account? <a href="#register">Register here</a>
+          </div>
+        </div>
+
+        <!-- Step 2: 2FA Verification (OTP or Face/Passkey) -->
+        <div id="login-step-2" class="hidden">
+          <div class="auth-card-header">
+            <span class="auth-step-pill">Step 2 of 2</span>
+            <h2>Security Verification</h2>
+            <p>Confirm your identity for role: <strong id="verify-role-text">Research Coordinator</strong></p>
+          </div>
+
+          <!-- Demo Mode Banner -->
+          <div class="demo-otp-banner">
+            <span>ℹ️ <strong>Demo mode active:</strong> Verification code is always <code>123456</code></span>
+          </div>
+
+          <!-- Verification Tabs: OTP vs Passkey -->
+          <div class="verify-methods-tabs">
+            <button class="verify-method-btn active" id="tab-opt-code" type="button">6-Digit OTP Code</button>
+            <button class="verify-method-btn" id="tab-opt-passkey" type="button">Face / Passkey (Demo)</button>
+          </div>
+
+          <!-- OTP Entry Form -->
+          <form id="form-login-otp" class="auth-form" style="margin-top: 14px;">
+            <div class="form-group">
+              <label for="otp-code-input">Enter 6-Digit Code <span class="req">*</span></label>
+              <input type="text" id="otp-code-input" class="form-control otp-input" maxlength="6" placeholder="123456" autofocus required>
+              <small class="hint-text">Code expires in 5 minutes. 3 attempts permitted.</small>
+            </div>
+
+            <div id="otp-error-msg" class="error-msg-box hidden"></div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-verify-otp">Verify Code & Enter Dashboard</button>
+            
+            <div class="otp-resend-row">
+              <button type="button" class="btn-text" id="btn-resend-otp">Resend code (30s)</button>
+              <button type="button" class="btn-text" id="btn-back-step1">&larr; Back to login</button>
+            </div>
+          </form>
+
+          <!-- Passkey Demo Pane -->
+          <div id="pane-passkey-demo" class="hidden" style="text-align: center; padding: 24px 0;">
+            <div style="font-size: 3rem; margin-bottom: 12px;">🛡️</div>
+            <h4>Biometric WebAuthn (Face ID / Passkey)</h4>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Use your device hardware security token or Windows Hello / Touch ID.</p>
+            <button type="button" class="btn btn-primary btn-lg" id="btn-simulate-passkey">Simulate Biometric Verification</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================================================================
+       PAGE 4: ROLE DASHBOARDS (Shells for 9 roles + Left Nav + My Submissions)
+       ====================================================================== -->
+  <div id="view-dashboard" class="dashboard-shell hidden">
+    
+    <!-- Left Navigation -->
+    <aside class="dash-sidebar" id="dash-sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-symbol">🌿</span>
+        <span class="brand-text">AyurCTMS</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-item active" id="nav-item-overview" onclick="event.preventDefault(); showDashTab('overview');">
+          <span class="item-icon">📊</span> Overview & KPIs
+        </a>
+        <a href="#" class="sidebar-item" id="nav-item-workspace" onclick="event.preventDefault(); showDashTab('workspace');">
+          <span class="item-icon" id="workspace-nav-icon">🩺</span> <span id="workspace-nav-label">Role Workspace</span>
+        </a>
+        <a href="#" class="sidebar-item" id="nav-item-escalations" onclick="event.preventDefault(); showDashTab('escalations');">
+          <span class="item-icon">⚡</span> <span id="escalations-nav-label">Incoming Reports</span>
+          <span class="badge badge-red unread-badge hidden" id="esc-nav-badge" style="margin-left: auto; font-size: 0.7rem; padding: 1px 6px;">0</span>
+        </a>
+        <a href="#" class="sidebar-item" id="nav-item-submissions" onclick="event.preventDefault(); showDashTab('submissions');">
+          <span class="item-icon">📁</span> My Submissions
+        </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-team" onclick="event.preventDefault(); showDashTab('team');">
+          <span class="item-icon">👥</span> Team Activity (All)
+        </a>
+        <a href="#" class="sidebar-item" id="nav-item-compliance-link" onclick="event.preventDefault(); showDashTab('compliance-hub');">
+          <span class="item-icon">🚦</span> Compliance Hub
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="role-caption">Logged in as:</div>
+        <div class="user-role-label" id="side-user-role">Research Coordinator</div>
+        <div class="user-email-label" id="side-user-email">coordinator@ayurctms.demo</div>
+        <button id="btn-sidebar-signout" class="btn btn-outline-danger btn-block" style="margin-top: 10px;">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main Dashboard Content -->
+    <div class="dash-main-area">
+      
+      <!-- Top Bar -->
+      <header class="dash-top-bar">
+        <div class="dash-top-title">
+          <h2 id="dash-page-title">Dashboard Overview</h2>
+          <span class="dash-subtitle" id="dash-page-subtitle">AIIA Clinical Trial Center</span>
+        </div>
+        <div class="dash-top-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <!-- "View as role" preview switcher (Admin & PI only) -->
+          <div id="view-as-role-container" class="view-as-role-wrap hidden">
+            <label for="select-view-as-role">Preview role:</label>
+            <select id="select-view-as-role" onchange="switchViewAsRole(this.value)">
+              <option value="Principal Investigator">Principal Investigator</option>
+              <option value="Research Coordinator">Research Coordinator</option>
+              <option value="Doctor / Investigator">Doctor / Investigator</option>
+              <option value="Monitor">Monitor</option>
+              <option value="EC Member">EC Member</option>
+              <option value="PV Officer">PV Officer</option>
+              <option value="Admin">Admin</option>
+              <option value="Auditor / Regulator">Auditor / Regulator</option>
+              <option value="Institution Leadership">Institution Leadership</option>
+            </select>
+          </div>
+
+          <!-- Notification Bell -->
+          <button id="btn-notif-bell" class="btn-icon" onclick="showDashTab('escalations')" title="Real-time Alerts & Escalations">
+            <span>🔔</span>
+            <span class="bell-badge hidden" id="bell-badge-count">0</span>
+          </button>
+
+          <!-- Report to Superior Escalation Button -->
+          <button id="btn-open-escalation" class="btn btn-warning" onclick="openEscalationDrawer()" style="background: #f59e0b; color: #fff; font-weight: 600; border: none;">
+            ⚡ Report to PI / Admin
+          </button>
+
+          <button id="btn-new-submission" class="btn btn-primary" onclick="openNewSubmissionModal()">+ New Submission</button>
+        </div>
+      </header>
+
+      <!-- Dashboard View Panes -->
+      <div class="dash-content-body">
+        
+        <!-- PANE A: OVERVIEW & ROLE KPI CARDS -->
+        <div id="dash-pane-overview" class="dash-pane active">
+          <!-- Role Indicator Banner -->
+          <div class="role-welcome-banner">
+            <div>
+              <h3 id="welcome-role-heading">Welcome, Research Coordinator</h3>
+              <p id="welcome-role-description">Manage subject records, informed consent gates, and protocol visit logs.</p>
+            </div>
+            <span class="badge badge-green" id="role-status-badge">Approved Role</span>
+          </div>
+
+          <!-- Dynamic Role KPI Cards -->
+          <div class="kpi-grid" id="kpi-cards-container">
+            <!-- Populated via JS based on active role -->
+          </div>
+
+          <!-- Overview Charts Section (Exclusively for PI, Admin, and Monitor) -->
+          <div id="overview-charts-container" class="overview-charts-grid hidden">
+            <!-- Dynamic ChartCard elements injected via JS -->
+          </div>
+
+          <!-- Quick Action Notice -->
+          <div class="dash-card" style="margin-top: 24px;">
+            <h3>Role Access & Routing Protocol</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 6px;">
+              You are authenticated to your approved workspace. Under AyurCTMS security policy, attempting to open another role's dashboard URL triggers an automatic redirect back to your authorized screen.
+            </p>
+          </div>
+        </div>
+
+        <!-- PANE B: ROLE-SPECIFIC WORKSPACE -->
+        <div id="dash-pane-workspace" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3 id="workspace-title">Role Clinical Workspace</h3>
+              <p id="workspace-subtitle">Role-tailored tools, participants ledger, and compliance monitors.</p>
+            </div>
+            <div class="pane-actions" id="workspace-quick-actions">
+              <!-- Populated dynamically based on role -->
+            </div>
+          </div>
+          <div id="workspace-content-area" style="margin-top: 18px;">
+            <!-- Populated dynamically via JS for each role -->
+          </div>
+        </div>
+
+        <!-- PANE C: ESCALATION & INCOMING REPORTS ("REPORT TO SUPERIOR") -->
+        <div id="dash-pane-escalations" class="dash-pane">
+          <!-- Critical SLA Warning Banner (Red sticky banner) -->
+          <div id="esc-critical-banner" class="sla-banner critical hidden">
+            <div class="sla-banner-icon">🚨</div>
+            <div class="sla-banner-text">
+              <strong id="esc-critical-title">CRITICAL UNACKNOWLEDGED REPORT:</strong>
+              <span id="esc-critical-desc">Immediate PI review required within 1-hour GCP-ASU SLA window.</span>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="filterEscalationsByUrgency('Critical')">Review Now &rarr;</button>
+          </div>
+
+          <!-- High SLA Warning Banner (Amber) -->
+          <div id="esc-high-banner" class="sla-banner high hidden">
+            <div class="sla-banner-icon">⚠️</div>
+            <div class="sla-banner-text">
+              <strong id="esc-high-title">HIGH URGENCY REPORT PENDING:</strong>
+              <span id="esc-high-desc">Action required within 24-hour SLA window.</span>
+            </div>
+          </div>
+
+          <div class="pane-header-row">
+            <div>
+              <h3 id="esc-pane-title">Incoming Escalation Reports</h3>
+              <p id="esc-pane-subtitle">Real-time alerts submitted by trial team members requiring PI / Admin action.</p>
+            </div>
+            <div class="pane-actions" style="display: flex; gap: 8px;">
+              <button class="btn btn-warning" onclick="openEscalationDrawer()">+ Submit New Escalation</button>
+              <button class="btn btn-secondary" onclick="loadEscalationsUI()">🔄 Refresh Realtime</button>
+            </div>
+          </div>
+
+          <!-- Filter Strip -->
+          <div class="filter-strip" style="margin-top: 14px;">
+            <div class="filter-item">
+              <label>Urgency:</label>
+              <select id="filter-esc-urgency" class="form-control" onchange="filterEscalationsUI()">
+                <option value="">All Urgencies</option>
+                <option value="Critical">Critical (1h SLA)</option>
+                <option value="High">High (24h SLA)</option>
+                <option value="Normal">Normal</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>Status:</label>
+              <select id="filter-esc-status" class="form-control" onchange="filterEscalationsUI()">
+                <option value="">All Statuses</option>
+                <option value="Sent">Sent (Unacknowledged)</option>
+                <option value="Acknowledged">Acknowledged</option>
+                <option value="In progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>Category:</label>
+              <select id="filter-esc-category" class="form-control" onchange="filterEscalationsUI()">
+                <option value="">All Categories</option>
+                <option value="Safety">Safety / ADR / SAE</option>
+                <option value="Participant">Participant</option>
+                <option value="Consent">Consent</option>
+                <option value="Protocol deviation">Protocol deviation</option>
+                <option value="Data issue">Data issue</option>
+                <option value="Site issue">Site issue</option>
+                <option value="Ethics">Ethics</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Escalations Feed Container -->
+          <div class="escalations-list" id="escalations-cards-container" style="margin-top: 18px;">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- PANE D: "MY SUBMISSIONS" (EVERY ROLE) -->
+        <div id="dash-pane-submissions" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>My Submissions Ledger</h3>
+              <p>Everything you created or submitted. Edits keep an immutable version history; records can be formally verified.</p>
+            </div>
+            <div class="pane-actions">
+              <button class="btn btn-secondary" onclick="loadSubmissionsUI()">🔄 Refresh</button>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="margin-top: 16px;">
+            <table class="data-table" id="table-my-submissions">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Versions</th>
+                  <th>Verification</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-my-submissions">
+                <!-- Dynamically populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANE C: "TEAM ACTIVITY" (ADMIN & PI ONLY) -->
+        <div id="dash-pane-team" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>Team Activity & Submissions Review</h3>
+              <p>Global oversight of all trial submissions across investigators and sites.</p>
+            </div>
+          </div>
+
+          <!-- Multi-filter bar -->
+          <div class="filter-strip">
+            <div class="filter-item">
+              <label>Role:</label>
+              <select id="filter-team-role" class="form-control" onchange="filterTeamActivityUI()">
+                <option value="">All Roles</option>
+                <option value="Research Coordinator">Research Coordinator</option>
+                <option value="Doctor / Investigator">Doctor / Investigator</option>
+                <option value="Monitor">Monitor</option>
+                <option value="PV Officer">PV Officer</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>Type:</label>
+              <select id="filter-team-type" class="form-control" onchange="filterTeamActivityUI()">
+                <option value="">All Types</option>
+                <option value="consent">Consent</option>
+                <option value="prakriti_assessment">Prakriti</option>
+                <option value="ae_report">AE Report</option>
+                <option value="visit_note">Visit Note</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>Status:</label>
+              <select id="filter-team-status" class="form-control" onchange="filterTeamActivityUI()">
+                <option value="">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Verified">Verified</option>
+                <option value="Needs correction">Needs correction</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="margin-top: 16px;">
+            <table class="data-table" id="table-team-submissions">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Author & Role</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Review Action</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-team-submissions">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PANE D: COMPLIANCE HUB (Embedded Link) -->
+        <div id="dash-pane-compliance-hub" class="dash-pane">
+          <div class="dash-card">
+            <h3>Tri-Regulatory Compliance Evaluation</h3>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">
+              AyurCTMS checks all live clinical data against the Ministry of AYUSH GCP-ASU Guidelines, DPDP Act 2023 Rules 2025, and CERT-In Directions 2022.
+            </p>
+            <div class="compliance-summary-badges">
+              <span class="badge badge-green">GCP-ASU: Compliant</span>
+              <span class="badge badge-green">DPDP 2025: Active</span>
+              <span class="badge badge-green">CERT-In 6h Desk: Ready</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       ESCALATION DRAWER: "Report to PI / Admin"
+       ====================================================================== -->
+  <div id="escalation-drawer-overlay" class="drawer-overlay hidden" onclick="closeEscalationDrawer(event)">
+    <div class="drawer-panel" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <span class="drawer-badge">GCP-ASU Regulatory Escalation</span>
+          <h3>Report to PI / Admin</h3>
+          <p>Instant notification dispatched to Principal Investigator and Trial Administrator.</p>
+        </div>
+        <button class="btn-close" onclick="closeEscalationDrawer()">&times;</button>
+      </div>
+
+      <form id="form-escalation-compose" class="auth-form" onsubmit="submitEscalationForm(event)">
+        <div class="form-group">
+          <label for="esc-category">Category <span class="req">*</span></label>
+          <select id="esc-category" class="form-control" required>
+            <option value="Safety">Safety (Adverse Drug Reaction / Toxicity / SAE)</option>
+            <option value="Participant">Participant (Condition change / Withdrawal / Relocation)</option>
+            <option value="Consent">Consent (Informed consent issue / Illiterate witness / Translation)</option>
+            <option value="Protocol deviation">Protocol Deviation (Dosing / Visit window / Sample handling)</option>
+            <option value="Data issue">Data Issue (CRF discrepancy / Electronic ledger / NTP Clock)</option>
+            <option value="Site issue">Site Issue (Pharmacy storage / Equipment calibration / Non-compliance)</option>
+            <option value="Ethics">Ethics (IEC approval / Amendment / Query)</option>
+            <option value="Other">Other Operational or Regulatory Notice</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Urgency Level <span class="req">*</span></label>
+          <div class="urgency-selector">
+            <label class="urgency-option">
+              <input type="radio" name="esc-urgency" value="Normal" checked>
+              <span class="urgency-card normal">
+                <strong>Normal</strong>
+                <small>Routine clinical notice</small>
+              </span>
+            </label>
+            <label class="urgency-option">
+              <input type="radio" name="esc-urgency" value="High">
+              <span class="urgency-card high">
+                <strong>High</strong>
+                <small>Action within 24h SLA</small>
+              </span>
+            </label>
+            <label class="urgency-option">
+              <input type="radio" name="esc-urgency" value="Critical">
+              <span class="urgency-card critical">
+                <strong>Critical</strong>
+                <small>SAE / Severe breach (1h SLA)</small>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="esc-study">Trial Protocol</label>
+            <input type="text" id="esc-study" class="form-control" value="AYUR-CT-2026-001" readonly>
+          </div>
+          <div class="form-group">
+            <label for="esc-site">Site ID</label>
+            <input type="text" id="esc-site" class="form-control" value="SITE-01" readonly>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="esc-subject-code">Participant Subject Code <small>(Optional — strictly coded, never name)</small></label>
+          <select id="esc-subject-code" class="form-control">
+            <option value="">-- No specific subject / General Site Issue --</option>
+            <!-- Populated via JS with 150 subject codes -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between;">
+            <label for="esc-summary">Short Summary <span class="req">*</span></label>
+            <small id="esc-char-count" style="color: var(--text-muted); font-size: 0.78rem;">0 / 120</small>
+          </div>
+          <input type="text" id="esc-summary" class="form-control" maxlength="120" placeholder="Brief summary (max 120 characters)" required oninput="updateCharCount(this)">
+        </div>
+
+        <div class="form-group">
+          <label for="esc-details">Clinical Details & Immediate Action Taken <span class="req">*</span></label>
+          <textarea id="esc-details" class="form-control" rows="4" placeholder="Full context, doses administered, concomitant therapies, or source observations..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="esc-attachment">Optional Attachment Document</label>
+          <input type="text" id="esc-attachment" class="form-control" placeholder="Filename (e.g. lab_report_042.pdf, ec_renewal.pdf)">
+        </div>
+
+        <div class="drawer-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeEscalationDrawer()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-escalation">Submit Now &rarr;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Escalation Action Modal (Reply, Assign, Resolve) -->
+  <div class="modal-overlay hidden" id="modal-escalation-action">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-esc-action-title">Escalation Action</h3>
+        <button class="btn-close" onclick="closeModal('modal-escalation-action')">&times;</button>
+      </div>
+      <div id="modal-esc-action-body" style="padding: 16px 0;">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 1: NEW SUBMISSION
+       ====================================================================== -->
+  <div class="modal-overlay hidden" id="modal-new-submission">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Submission</h3>
+        <button class="btn-close" onclick="closeModal('modal-new-submission')">&times;</button>
+      </div>
+      <form id="form-create-submission" class="auth-form">
+        <div class="form-group">
+          <label for="sub-title">Submission Title <span class="req">*</span></label>
+          <input type="text" id="sub-title" class="form-control" placeholder="e.g. Subject Visit 01 Case Report Form" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sub-type">Type <span class="req">*</span></label>
+            <select id="sub-type" class="form-control" required>
+              <option value="consent">Informed Consent Form</option>
+              <option value="prakriti_assessment">Deha Prakriti Assessment</option>
+              <option value="ae_report">Adverse Event (AE) / ADR Log</option>
+              <option value="visit_note">Monitoring / Protocol Visit Note</option>
+              <option value="document">General Study Document</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sub-status">Initial Status</label>
+            <select id="sub-status" class="form-control">
+              <option value="Draft" selected>Draft (Can be edited)</option>
+              <option value="Submitted">Submitted for Verification</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="sub-notes">Content Details / Observations</label>
+          <textarea id="sub-notes" class="form-control" rows="3" placeholder="Enter findings, dosha metrics, or subject identifiers..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-new-submission')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Submission</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: EDIT SUBMISSION WITH VERSION REASON
+       ====================================================================== -->
+  <div class="modal-overlay hidden" id="modal-edit-submission">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit Submission (Version Tracked)</h3>
+        <button class="btn-close" onclick="closeModal('modal-edit-submission')">&times;</button>
+      </div>
+      <form id="form-edit-submission" class="auth-form">
+        <input type="hidden" id="edit-sub-id">
+        <div class="form-group">
+          <label for="edit-sub-title">Title</label>
+          <input type="text" id="edit-sub-title" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-sub-notes">Updated Observations / Content</label>
+          <textarea id="edit-sub-notes" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="form-group highlight-box">
+          <label for="edit-sub-reason">Reason for Correction (GCP-ASU & DPDP Audit Mandate) <span class="req">*</span></label>
+          <input type="text" id="edit-sub-reason" class="form-control" placeholder="e.g. Corrected transcription error from hospital case sheet" required>
+          <small class="hint-text">Previous value will be preserved in version history with your signature and timestamp.</small>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-submission')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save New Version</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 3: REGULATORY VERIFY SIGN-OFF
+       ====================================================================== -->
+  <div class="modal-overlay hidden" id="modal-verify-submission">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Formal Regulatory Verification Sign-off</h3>
+        <button class="btn-close" onclick="closeModal('modal-verify-submission')">&times;</button>
+      </div>
+      <form id="form-verify-submission" class="auth-form">
+        <input type="hidden" id="verify-sub-id">
+        <div class="alert-box info">
+          <strong>Reviewer Confirmation:</strong> By clicking confirm, you certify that this clinical entry has been checked against source records and conforms to GCP-ASU standards.
+        </div>
+        <div class="form-group">
+          <label for="verify-note">Verification Note / Finding <span class="req">*</span></label>
+          <input type="text" id="verify-note" class="form-control" value="Source document verified against raw hospital clinical records." required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-verify-submission')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm Verification</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Global Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>AyurCTMS Clinical Trials</h4>
+        <p>All India Institute of Ayurveda (AIIA), Ministry of AYUSH, Government of India.</p>
+        <span class="badge badge-secondary" style="margin-top: 8px;">Synthetic Demo Data</span>
+      </div>
+      <div class="footer-col">
+        <h4>Data Protection Officer (DPO)</h4>
+        <p>Dr. Rajeshwar Sharma, M.D. (Ayu), CIPP/A</p>
+        <p><a href="mailto:dpo@ayurctms.gov.in">dpo@ayurctms.gov.in</a> • Phone: +91-11-2953-8400</p>
+      </div>
+      <div class="footer-col">
+        <h4>Sovereign Clocks & Storage</h4>
+        <p>Hosted in Mumbai, Maharashtra, India (ap-south-1). Calibrated to NIC/NPL NTP servers.</p>
+        <p><a href="#register">Privacy Notice</a> • <a href="#landing">Role Access Guide</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="chart-card.js"></script>
+  <script src="chart-data-helper.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
