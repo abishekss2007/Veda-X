@@ -1,7 +1,7 @@
 # AyurCTMS — Clinical Trial Management System for Ayurveda (AIIA)
 
 <div align="center">
-  <img src="frontend/aiia-logo.jpg" alt="All India Institute of Ayurveda" width="120" style="border-radius: 50%;" />
+  <img src="frontend/aiia-logo-v2.jpg" alt="All India Institute of Ayurveda" width="120" style="border-radius: 50%;" />
   <p><strong>Ministry of AYUSH | All India Institute of Ayurveda (AIIA), New Delhi</strong></p>
   <p><em>Statutory Clinical Trial Workspace engineered for Ayurveda, Siddha & Unani Research</em></p>
   <p>
@@ -322,7 +322,7 @@ Veda-X/
 │   │   └── migrations/             # 6 production SQL migration files
 │   └── tests/                      # 28 Pytest automated compliance test suites
 ├── frontend/
-│   ├── aiia-logo.jpg               # Official AIIA institute emblem
+│   ├── aiia-logo-v2.jpg            # Official AIIA institute emblem
 │   ├── app.js                      # Core SPA router, authentication & role controller
 │   ├── chart-card.js               # Clinical data visualization components
 │   ├── chart-data-helper.js        # Clinical metrics aggregator
