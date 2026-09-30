@@ -90,13 +90,25 @@ def test_coordinator_cannot_access_other_site_data():
 
 # ============================================================================
 # TEST 4: Admin cannot read clinical data, and Monitor gets no unmasked names/phones
+# TEST 4: Admin and Monitor can view records with masked PII, but Admin cannot add participants
 # ============================================================================
 def test_admin_and_monitor_clinical_data_restrictions():
-    # Admin tries to access clinical records
+    # Admin can view clinical records with masked PII
     admin_headers = get_auth_header(role="Admin", user_id=6, email="admin@ayurctms.in", site_id="SITE-HQ")
     resp_admin = client.get("/api/participants", headers=admin_headers)
-    assert resp_admin.status_code == 403
-    assert "Your role (Admin) cannot do this" in resp_admin.json()["detail"]
+    assert resp_admin.status_code == 200
+    admin_data = resp_admin.json()
+    assert len(admin_data) > 0
+    assert "*" in admin_data[0]["full_name"]
+
+    # Admin CANNOT add participants (Coordinator only)
+    resp_admin_add = client.post("/api/participants", headers=admin_headers, json={
+        "subject_code": "SUB-AIIA-001-099",
+        "age": 45,
+        "gender": "Male",
+        "consent_status": "Written Consent Verified"
+    })
+    assert resp_admin_add.status_code == 403
 
     # Monitor tries to access clinical records: gets access BUT names and phones are masked
     monitor_headers = get_auth_header(role="Monitor", user_id=3, email="monitor.verma@ayurctms.in", site_id="SITE-01")
@@ -111,6 +123,7 @@ def test_admin_and_monitor_clinical_data_restrictions():
     assert first_record["phone_number"].endswith("10")
     # Name must be masked
     assert "*" in first_record["full_name"]
+
 
 
 # ============================================================================

@@ -22,7 +22,7 @@ from .db.models import (
 from .api import (
     auth, participants, consent, ethics, clinical_ayurveda,
     investigational_products, monitoring, dpdp, cert_in,
-    compliance, audit, files, supabase_integration, escalations
+    compliance, audit, files, supabase_integration, escalations, tasks
 )
 
 def seed_synthetic_data(db: Session):
@@ -369,6 +369,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(participants.router, prefix="/api")
 app.include_router(consent.router, prefix="/api")
 app.include_router(ethics.router, prefix="/api")
+app.include_router(ethics.legal_router, prefix="/api")
 app.include_router(clinical_ayurveda.router, prefix="/api")
 app.include_router(investigational_products.router, prefix="/api")
 app.include_router(monitoring.router, prefix="/api")
@@ -379,6 +380,7 @@ app.include_router(audit.router, prefix="/api")
 app.include_router(files.router, prefix="/api")
 app.include_router(supabase_integration.router, prefix="/api")
 app.include_router(escalations.router, prefix="/api")
+app.include_router(tasks.router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():

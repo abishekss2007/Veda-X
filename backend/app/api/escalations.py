@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from ..core.audit import log_audit_event
 from ..db.database import get_db
+from ..db.models import User
+from .deps import get_current_user, require_role
 
 router = APIRouter(prefix="/escalations", tags=["Escalations & Superior Reporting"])
 
@@ -492,6 +494,7 @@ class EscalationCreateIn(BaseModel):
     summary: str = Field(..., max_length=120)
     details: str
     attachment_name: Optional[str] = None
+    attachment_url: Optional[str] = None
 
 class EscalationAcknowledgeIn(BaseModel):
     actor_name: str
@@ -524,7 +527,8 @@ def list_escalations(
     user_email: Optional[str] = None,
     status: Optional[str] = None,
     urgency: Optional[str] = None,
-    category: Optional[str] = None
+    category: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
 ):
     """
     Returns escalations filtered by user role and RLS rules:
@@ -536,14 +540,14 @@ def list_escalations(
     results = []
     for esc in _synthetic_escalations:
         # RLS Filtering
-        if role in ["Admin", "Principal Investigator"]:
+        if current_user.role in ["Admin", "Principal Investigator"]:
             allow = True
-        elif role == "PV Officer":
+        elif current_user.role == "PV Officer":
             allow = (esc["category"] == "Safety" or "AE" in esc["summary"] or "SAE" in esc["summary"] or esc["from_role"] == "PV Officer")
-        elif role == "EC Member":
+        elif current_user.role == "EC Member":
             allow = (esc["category"] == "Ethics" or esc["urgency"] == "Critical" or esc["from_role"] == "EC Member")
         else:
-            allow = (esc["from_role"] == role or (user_email and user_email.lower() in esc["from_name"].lower()))
+            allow = (esc["from_role"] == current_user.role or current_user.email.lower() == esc["from_user"].lower())
         
         if not allow:
             continue
@@ -560,7 +564,12 @@ def list_escalations(
     return sorted(results, key=lambda x: x["created_at"], reverse=True)
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create_escalation(req: EscalationCreateIn, request: Request, db: Session = Depends(get_db)):
+def create_escalation(
+    req: EscalationCreateIn,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """
     Creates an escalation report.
     - If Doctor reports AE/SAE, auto-dispatches to PV Officer queue.
@@ -570,19 +579,23 @@ def create_escalation(req: EscalationCreateIn, request: Request, db: Session = D
     now_str = datetime.now(timezone.utc).isoformat()
     esc_id = f"esc-{len(_synthetic_escalations) + 101}"
 
+    if current_user.role in ["Principal Investigator", "Admin"]:
+        raise HTTPException(status_code=403, detail="Principal Investigator and Admin are recipients and cannot create escalations.")
+
     new_esc = {
         "id": esc_id,
-        "from_user": req.from_user,
-        "from_name": req.from_name,
-        "from_role": req.from_role,
+        "from_user": current_user.email,
+        "from_name": current_user.full_name,
+        "from_role": current_user.role,
         "study_id": req.study_id,
-        "site_id": req.site_id,
+        "site_id": current_user.site_id,
         "subject_code": req.subject_code,
         "category": req.category,
         "urgency": req.urgency,
         "summary": req.summary,
         "details": req.details,
-        "attachment_url": req.attachment_name,
+        "attachment_name": req.attachment_name,
+        "attachment_url": req.attachment_url or req.attachment_name,
         "status": "Sent",
         "created_at": now_str,
         "acknowledged_by": None,
@@ -594,8 +607,8 @@ def create_escalation(req: EscalationCreateIn, request: Request, db: Session = D
             {
                 "id": str(uuid.uuid4()),
                 "event_type": "created",
-                "actor_name": req.from_name,
-                "actor_role": req.from_role,
+                "actor_name": current_user.full_name,
+                "actor_role": current_user.role,
                 "message": f"Escalation created ({req.urgency} urgency).",
                 "created_at": now_str
             }
@@ -611,21 +624,21 @@ def create_escalation(req: EscalationCreateIn, request: Request, db: Session = D
             "ref_id": esc_id,
             "type": f"{req.urgency.lower()}_escalation",
             "title": f"[{req.urgency.upper()}] {req.category}: {req.summary}",
-            "message": f"Reported by {req.from_name} ({req.from_role}) on {req.study_id}.",
+            "message": f"Reported by {current_user.full_name} ({current_user.role}) on {req.study_id}.",
             "is_read": False,
             "created_at": now_str
         })
 
     # 2. Rule: Doctor's AE/SAE report is auto-copied to PV Officer queue
     is_safety_event = (req.category == "Safety" or "ae" in req.summary.lower() or "sae" in req.summary.lower())
-    if is_safety_event and req.from_role in ["Doctor / Investigator", "Research Coordinator"]:
+    if is_safety_event and current_user.role in ["Doctor / Investigator", "Research Coordinator"]:
         _notifications.insert(0, {
             "id": f"notif-{len(_notifications) + 1}",
             "target_role": "PV Officer",
             "ref_id": esc_id,
             "type": "pv_signal",
             "title": f"SAFETY QUEUE: {req.summary}",
-            "message": f"Auto-copied from {req.from_role} to Pharmacovigilance review queue.",
+            "message": f"Auto-copied from {current_user.role} to Pharmacovigilance review queue.",
             "is_read": False,
             "created_at": now_str
         })
@@ -663,8 +676,8 @@ def create_escalation(req: EscalationCreateIn, request: Request, db: Session = D
     log_audit_event(
         db=db,
         user_id=None,
-        user_email=req.from_name,
-        role=req.from_role,
+        user_email=current_user.email,
+        role=current_user.role,
         ip_address=request.client.host if request.client else "127.0.0.1",
         action="ESCALATION_SUBMITTED",
         entity_type="Escalation",
@@ -675,7 +688,9 @@ def create_escalation(req: EscalationCreateIn, request: Request, db: Session = D
     return new_esc
 
 @router.post("/{esc_id}/acknowledge")
-def acknowledge_escalation(esc_id: str, req: EscalationAcknowledgeIn, request: Request, db: Session = Depends(get_db)):
+def acknowledge_escalation(esc_id: str, req: EscalationAcknowledgeIn, request: Request, current_user: User = Depends(require_role(["Admin", "Principal Investigator"])), db: Session = Depends(get_db)):
+    req.actor_name = current_user.full_name
+    req.actor_role = current_user.role
     for esc in _synthetic_escalations:
         if esc["id"] == esc_id:
             now_str = datetime.now(timezone.utc).isoformat()
@@ -708,7 +723,9 @@ def acknowledge_escalation(esc_id: str, req: EscalationAcknowledgeIn, request: R
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
 
 @router.post("/{esc_id}/reply")
-def reply_escalation(esc_id: str, req: EscalationReplyIn, request: Request, db: Session = Depends(get_db)):
+def reply_escalation(esc_id: str, req: EscalationReplyIn, request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    req.actor_name = current_user.full_name
+    req.actor_role = current_user.role
     for esc in _synthetic_escalations:
         if esc["id"] == esc_id:
             now_str = datetime.now(timezone.utc).isoformat()
@@ -735,7 +752,9 @@ def reply_escalation(esc_id: str, req: EscalationReplyIn, request: Request, db: 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
 
 @router.post("/{esc_id}/assign")
-def assign_escalation(esc_id: str, req: EscalationAssignIn, request: Request, db: Session = Depends(get_db)):
+def assign_escalation(esc_id: str, req: EscalationAssignIn, request: Request, current_user: User = Depends(require_role(["Admin", "Principal Investigator"])), db: Session = Depends(get_db)):
+    req.actor_name = current_user.full_name
+    req.actor_role = current_user.role
     for esc in _synthetic_escalations:
         if esc["id"] == esc_id:
             now_str = datetime.now(timezone.utc).isoformat()
@@ -767,7 +786,9 @@ def assign_escalation(esc_id: str, req: EscalationAssignIn, request: Request, db
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
 
 @router.post("/{esc_id}/resolve")
-def resolve_escalation(esc_id: str, req: EscalationResolveIn, request: Request, db: Session = Depends(get_db)):
+def resolve_escalation(esc_id: str, req: EscalationResolveIn, request: Request, current_user: User = Depends(require_role(["Admin", "Principal Investigator"])), db: Session = Depends(get_db)):
+    req.actor_name = current_user.full_name
+    req.actor_role = current_user.role
     for esc in _synthetic_escalations:
         if esc["id"] == esc_id:
             now_str = datetime.now(timezone.utc).isoformat()
@@ -797,27 +818,28 @@ def resolve_escalation(esc_id: str, req: EscalationResolveIn, request: Request, 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
 
 @router.get("/notifications")
-def get_notifications(role: str):
+def get_notifications(role: Optional[str] = None, current_user: User = Depends(get_current_user)):
     """Returns unread and recent notifications for the specified role."""
+    role = current_user.role
     return [
         n for n in _notifications
         if n["target_role"].lower() == role.lower() or (role in ["Admin", "Principal Investigator"] and n["type"].startswith("critical"))
     ]
 
 @router.post("/notifications/{notif_id}/read")
-def mark_notification_read(notif_id: str):
+def mark_notification_read(notif_id: str, current_user: User = Depends(get_current_user)):
     for n in _notifications:
-        if n["id"] == notif_id:
+        if n["id"] == notif_id and (n["target_role"] == current_user.role or current_user.role in ["Admin", "Principal Investigator"]):
             n["is_read"] = True
             return {"success": True}
-    return {"success": False}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found.")
 
 # ==============================================================================
 # COMPREHENSIVE CLINICAL TRIAL DATASET (6 Studies, 4 Sites, 150 Subject Codes, 60 AEs)
 # ==============================================================================
 
 @router.get("/study-data")
-def get_study_data():
+def get_study_data(current_user: User = Depends(get_current_user)):
     """Returns rich synthetic clinical datasets powering the 9 role dashboards."""
     studies = [
         {"id": "AYUR-CT-2026-001", "name": "Ashwagandha & Brahmi in Mild Cognitive Impairment", "phase": "Phase II", "target": 50, "enrolled": 42, "saes": 2, "health_score": 96, "sites": 2, "status": "Active", "lead_pi": "Prof. (Dr.) Rajeshwar Sharma"},

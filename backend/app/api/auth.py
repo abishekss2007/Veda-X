@@ -1,5 +1,6 @@
 import secrets
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 
@@ -14,11 +15,43 @@ from ..core.security import (
     create_access_token, create_refresh_token, create_otp_stage_token,
     decode_token
 )
+from pydantic import BaseModel
 from ..core.security_settings import security_settings
 from ..core.audit import log_audit_event
 from .deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication & Access Control"])
+
+class RoleSwitchLogRequest(BaseModel):
+    from_role: str
+    to_role: str
+    user_email: str
+    success: bool
+    reason: Optional[str] = None
+
+@router.post("/log-role-switch")
+def log_role_switch(
+    req: RoleSwitchLogRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    action = "ROLE_SWITCH_SUCCESS" if req.success else "ROLE_SWITCH_FAILED"
+    log_audit_event(
+        db=db,
+        user_id=None,
+        user_email=req.user_email,
+        role=req.from_role,
+        ip_address=client_ip,
+        action=action,
+        entity_type="RoleSwitch",
+        entity_id=req.to_role,
+        previous_value=req.from_role,
+        new_value=req.to_role,
+        reason=req.reason or f"Role switch from '{req.from_role}' to '{req.to_role}'. Success: {req.success}."
+    )
+    return {"status": "logged"}
+
 
 @router.post("/login", response_model=TokenResponse)
 def login(

@@ -31,6 +31,7 @@ const ChartDataHelper = {
    * Fetches latest study data and escalations from the backend / Supabase store.
    */
   async fetchLatestData() {
+    if (!window.appState || !window.appState.isLoggedIn) return;
     try {
       const [studyRes, escRes] = await Promise.all([
         fetch('/api/escalations/study-data'),
@@ -233,6 +234,4 @@ const ChartDataHelper = {
 // Auto-sync every 15 seconds to ensure live updates without page reload
 if (typeof window !== 'undefined') {
   window.ChartDataHelper = ChartDataHelper;
-  // Trigger initial fetch
-  setTimeout(() => ChartDataHelper.fetchLatestData(), 500);
 }

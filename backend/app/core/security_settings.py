@@ -33,10 +33,15 @@ class SecuritySettings:
 
     # Roles requiring mandatory 2-Factor Authentication (OTP)
     ROLES_MANDATORY_OTP: Set[str] = {
-        "Doctor / Investigator", # Principal Investigator (PI)
-        "PV Officer",            # Pharmacovigilance Officer
-        "Auditor / Regulator",   # Regulatory Auditor
-        "Admin"                  # System Administrator
+        "Principal Investigator",
+        "Research Coordinator",
+        "Doctor / Investigator",
+        "Monitor",
+        "EC Member",
+        "PV Officer",
+        "Admin",
+        "Auditor / Regulator",
+        "Institution Leadership",
     }
 
     # 3. Session & Token Policies

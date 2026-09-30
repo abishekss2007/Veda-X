@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..db.database import get_db
 from ..db.models import User
 from ..core.security_settings import security_settings
-from ..core.security import create_access_token, decode_token
+from ..core.security import create_signed_file_token, decode_token
 from ..core.audit import log_audit_event
 from .deps import get_current_user
 
@@ -116,7 +116,7 @@ async def upload_file(
         f.write(total_content)
 
     # 5. Generate 5-minute signed token for private download
-    signed_token = create_access_token(
+    signed_token = create_signed_file_token(
         {"sub": str(current_user.id), "file_uuid": safe_storage_name, "type": "signed_file_link"},
         expires_delta=timedelta(minutes=5)
     )

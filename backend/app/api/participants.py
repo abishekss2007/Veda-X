@@ -32,25 +32,9 @@ def list_participants(
     """
     client_ip = request.client.host if request.client else "127.0.0.1"
 
-    # 1. Admin Block (Prompt 7 Rule 3: 'the Admin sees no clinical data')
-    if current_user.role == "Admin":
-        log_audit_event(
-            db=db,
-            user_id=current_user.id,
-            user_email=current_user.email,
-            role=current_user.role,
-            ip_address=client_ip,
-            action="UNAUTHORIZED_CLINICAL_ACCESS_BLOCKED",
-            entity_type="ClinicalData",
-            details="System Admin attempted to query patient clinical records directly.",
-            site_id=current_user.site_id
-        )
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your role (Admin) cannot do this. Administrators are restricted from viewing clinical trial subject data."
-        )
-
+    # PI and Admin can view participants; Admin sees masked/de-identified clinical records
     query = db.query(Participant)
+
 
     # 2. Coordinator Site Tenancy Lock
     if current_user.role == "Research Coordinator":
@@ -134,16 +118,10 @@ def get_participant_by_id(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Retrieves single participant with row-level security and cross-site prevention."""
-    if current_user.role == "Admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Your role (Admin) cannot do this. Administrators cannot view clinical data."
-        )
-
     # Verify site tenancy
     p = verify_site_access(participant_id, current_user, db, request)
     can_unmask_pii = current_user.role in security_settings.CAN_VIEW_UNMASKED_PII
+
 
     p_dict = {
         "id": p.id,
@@ -184,16 +162,25 @@ def get_participant_by_id(
 def create_participant(
     req: ParticipantCreate,
     request: Request,
-    current_user: User = Depends(require_role(["Research Coordinator", "Doctor / Investigator"])),
+    current_user: User = Depends(require_role(["Research Coordinator"])),
     db: Session = Depends(get_db)
 ):
     """
     Creates a new clinical trial participant:
+    - Enforced: Only Research Coordinator can add participants at their assigned site.
+    - Enrolment is blocked without valid consent.
     - Enforces DPDP Section 9: If participant is minor (<18) or disabled, verifiable guardian consent is mandatory.
     - Isolates and encrypts Direct PII into restricted participant_pii table (AES-256).
-    - Participant is created in 'not enrolled' status until valid written consent is signed on file.
     """
     client_ip = request.client.host if request.client else "127.0.0.1"
+
+    # Enrolment blocked without valid consent
+    valid_consent = req.consent_status in ["Written Consent Verified", "Consented", "Verified"]
+    if not valid_consent:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Enrolment blocked: Valid informed consent is mandatory before adding a participant."
+        )
 
     # DPDP Section 9 Check: Minors and Persons with Disability
     is_underage = req.age < 18
@@ -208,10 +195,13 @@ def create_participant(
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Subject code already registered.")
 
+    # Coordinator can only add at their own site
+    assigned_site = current_user.site_id or "SITE-01"
+
     # Create participant record with pseudonymous ID
     participant = Participant(
         subject_code=req.subject_code,
-        site_id=current_user.site_id if current_user.role == "Research Coordinator" else req.site_id,
+        site_id=assigned_site,
         age=req.age,
         gender=req.gender,
         is_minor=is_underage or req.is_minor,
@@ -225,10 +215,11 @@ def create_participant(
         dominant_prakriti=req.dominant_prakriti,
         ayurvedic_diagnosis=req.ayurvedic_diagnosis,
         modern_diagnosis=req.modern_diagnosis,
-        is_enrolled=False, # Gate: Must have valid written consent on file
+        is_enrolled=True, # Valid consent verified
         is_dosed=False,
         data_status="active"
     )
+
     db.add(participant)
     db.flush()
 

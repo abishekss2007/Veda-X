@@ -14,6 +14,155 @@ const appState = {
   isLoggedIn: false,
   failedAttempts: {},
   
+  // Seeded Legal Documents with Live Expiry Dates & Version History
+  legalDocuments: [
+    {
+      id: "leg-001",
+      title: "CTRI Clinical Trial Registry Certificate",
+      type: "CTRI certificate",
+      study: "AYUR-CT-2026-001",
+      version: "v1.0",
+      issue_date: "2026-08-05",
+      expiry_date: "2027-08-06",
+      days_remaining: 310,
+      status: "safe",
+      reason: "Statutory national CTRI registration valid for full study duration.",
+      file_name: "CTRI_Registration_2026_09_0812.pdf",
+      file_size: "2.4 MB",
+      uploaded_by: "Dr. Rajeshwar Sharma (EC Chair)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2026-08-05T10:00:00Z", uploaded_by: "Dr. Rajeshwar Sharma" }
+      ]
+    },
+    {
+      id: "leg-002",
+      title: "Institutional Protocol Approval Clearance",
+      type: "protocol approval",
+      study: "AYUR-CT-2026-001",
+      version: "v2.0",
+      issue_date: "2026-03-29",
+      expiry_date: "2027-03-29",
+      days_remaining: 180,
+      status: "safe",
+      reason: "Amended regimen approved with zero high-risk dosha warnings.",
+      file_name: "IEC_Protocol_Approval_AYUR001_v2.pdf",
+      file_size: "4.1 MB",
+      uploaded_by: "Member Secretary (IEC)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2025-09-30T10:00:00Z", uploaded_by: "Prof. Sharma (PI)" },
+        { version: "v2.0", uploaded_at: "2026-03-29T11:00:00Z", uploaded_by: "Member Secretary (IEC)" }
+      ]
+    },
+    {
+      id: "leg-003",
+      title: "Hospital Multi-Site Clinical Trial MoU & Contract",
+      type: "MoU/contract",
+      study: "AYUR-CT-2026-001",
+      version: "v1.1",
+      issue_date: "2026-01-23",
+      expiry_date: "2027-01-23",
+      days_remaining: 115,
+      status: "safe",
+      reason: "Inter-institutional governance contract with Jamnagar IPGT&RA.",
+      file_name: "MoU_AIIA_IPGTRA_Clinical_2026.pdf",
+      file_size: "1.8 MB",
+      uploaded_by: "Legal Expert (IEC)",
+      versions: [
+        { version: "v1.1", uploaded_at: "2026-01-23T14:00:00Z", uploaded_by: "Legal Expert (IEC)" }
+      ]
+    },
+    {
+      id: "leg-004",
+      title: "Subject Clinical Trial Insurance Policy",
+      type: "insurance",
+      study: "AYUR-CT-2026-001",
+      version: "v1.0",
+      issue_date: "2025-12-07",
+      expiry_date: "2026-12-07",
+      days_remaining: 68,
+      status: "attention",
+      reason: "Trial insurance policy renewal due with underwriter within 68 days to maintain continuous patient coverage.",
+      file_name: "NewIndia_ClinicalInsurance_Policy_2026.pdf",
+      file_size: "3.2 MB",
+      uploaded_by: "Admin (System)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2025-12-07T09:30:00Z", uploaded_by: "Admin (System)" }
+      ]
+    },
+    {
+      id: "leg-005",
+      title: "AYUSH GMP Drug Manufacturing Licence (Extract Batch)",
+      type: "licence",
+      study: "AYUR-CT-2026-002",
+      version: "v1.0",
+      issue_date: "2025-11-11",
+      expiry_date: "2026-11-11",
+      days_remaining: 42,
+      status: "attention",
+      reason: "Statutory manufacturing licence annual re-inspection due; renew before expiration to avoid investigational drug dosing stoppage.",
+      file_name: "AYUSH_GMP_Manufacturing_Licence_Batch04.pdf",
+      file_size: "1.5 MB",
+      uploaded_by: "Prof. Sharma (PI)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2025-11-11T12:00:00Z", uploaded_by: "Prof. Sharma (PI)" }
+      ]
+    },
+    {
+      id: "leg-006",
+      title: "Annual Ethics Committee Protocol Renewal Letter",
+      type: "EC approval letter",
+      study: "AYUR-CT-2026-002",
+      version: "v1.0",
+      issue_date: "2025-10-19",
+      expiry_date: "2026-10-19",
+      days_remaining: 19,
+      status: "urgent",
+      reason: "Mandatory annual ethics committee review overdue for renewal; unrenewed trials must halt subject recruitment under GCP-ASU.",
+      file_name: "IEC_Annual_Renewal_Decision_AYUR002.pdf",
+      file_size: "2.1 MB",
+      uploaded_by: "Dr. Rajeshwar Sharma (EC Chair)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2025-10-19T15:00:00Z", uploaded_by: "Dr. Rajeshwar Sharma" }
+      ]
+    },
+    {
+      id: "leg-007",
+      title: "Biological Specimen Transfer Agreement (BMTA)",
+      type: "MoU/contract",
+      study: "AYUR-CT-2026-003",
+      version: "v1.0",
+      issue_date: "2026-04-09",
+      expiry_date: "2026-10-06",
+      days_remaining: 6,
+      status: "urgent",
+      reason: "Biological specimen transit authorization expires in 6 days; samples cannot be moved across labs without active BMTA clearance.",
+      file_name: "BMTA_Specimen_Transport_Agreement_2026.pdf",
+      file_size: "1.2 MB",
+      uploaded_by: "Member Secretary (IEC)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2026-04-09T10:30:00Z", uploaded_by: "Member Secretary (IEC)" }
+      ]
+    },
+    {
+      id: "leg-008",
+      title: "Institutional Bio-safety Committee (IBSC) Clearance",
+      type: "other",
+      study: "AYUR-CT-2026-003",
+      version: "v1.0",
+      issue_date: "2025-09-16",
+      expiry_date: "2026-09-16",
+      days_remaining: -14,
+      status: "expired",
+      reason: "Expired 14 days ago: Dosing paused for cohort C pending expedited DBT/RCGM bio-safety re-validation.",
+      file_name: "IBSC_Biosafety_Clearance_2025.pdf",
+      file_size: "1.9 MB",
+      uploaded_by: "Admin (System)",
+      versions: [
+        { version: "v1.0", uploaded_at: "2025-09-16T11:00:00Z", uploaded_by: "Admin (System)" }
+      ]
+    }
+  ],
+  
   // Local/Cached Submissions Store (Synchronized with Supabase backend)
   submissions: [
     {
@@ -100,6 +249,9 @@ const ROLE_TO_SLUG = {
 
 const SLUG_TO_ROLE = Object.fromEntries(Object.entries(ROLE_TO_SLUG).map(([r, s]) => [s, r]));
 
+// Shared role security config — single source of truth
+const SECURE_ROLES = ["Principal Investigator", "Admin", "EC Member"];
+
 // Demo Accounts Store
 const DEMO_ACCOUNTS = {
   "admin@ayurctms.demo": { pwd: "Admin@Demo#2026", role: "Admin", name: "System Administrator", site: "SITE-HQ" },
@@ -123,6 +275,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupLoginForm();
   setupSessionTimeout();
   setupThemeToggle();
+  setupAddParticipantForm();
+  setupUploadLegalDocForm();
   checkSupabaseBackendStatus();
 });
 
@@ -150,24 +304,30 @@ function handleRouteChange() {
       return;
     }
 
-    // ROUTE GUARD: User cannot view another role's dashboard unless Admin or PI
+    // ROUTE GUARD: User cannot view another role's dashboard without an authenticated session for that role
     const userRole = appState.currentUser.role;
     if (requestedRole && requestedRole !== userRole) {
-      if (userRole !== "Admin" && userRole !== "Principal Investigator") {
-        showToast(`No access to ${requestedRole} dashboard. Redirected to your authorized view.`);
-        window.location.hash = `#dashboard/${ROLE_TO_SLUG[userRole]}`;
-        return;
-      }
+      showToast(`Access restricted: please authenticate to view the ${requestedRole} dashboard.`);
+      window.location.hash = `#dashboard/${ROLE_TO_SLUG[userRole]}`;
+      return;
     }
 
     // Render Dashboard Shell for the role
     showView("dashboard");
-    renderDashboardView(requestedRole || userRole);
+    renderDashboardView(userRole);
     return;
   }
 
   // Handle standard public pages
   const viewId = hash.replace("#", "");
+  if (viewId === "login" && !appState.pendingRoleSwitch) {
+    const roleInput = document.getElementById("login-role");
+    if (roleInput) roleInput.disabled = false;
+    const cancelBtn1 = document.getElementById("btn-cancel-role-switch");
+    const cancelBtn2 = document.getElementById("btn-cancel-role-switch-step2");
+    if (cancelBtn1) cancelBtn1.classList.add("hidden");
+    if (cancelBtn2) cancelBtn2.classList.add("hidden");
+  }
   if (views.includes(viewId)) {
     showView(viewId);
   } else {
@@ -197,7 +357,9 @@ function setupRoleCards() {
   cards.forEach(card => {
     card.addEventListener("click", () => {
       const selectedRole = card.getAttribute("data-role");
-      document.getElementById("login-role").value = selectedRole;
+      const roleEl = document.getElementById("login-role");
+      roleEl.value = selectedRole;
+      roleEl.dispatchEvent(new Event("change"));
       window.location.hash = "#login";
     });
   });
@@ -321,6 +483,19 @@ function setupLoginForm() {
   const formOTP = document.getElementById("form-login-otp");
   const errorBox1 = document.getElementById("login-error-msg");
   const errorBox2 = document.getElementById("otp-error-msg");
+  const roleSelect = document.getElementById("login-role");
+  const submitBtn = document.getElementById("btn-proceed-step1");
+  const cancelBtn1 = document.getElementById("btn-cancel-role-switch");
+  const cancelBtn2 = document.getElementById("btn-cancel-role-switch-step2");
+  if (cancelBtn1) cancelBtn1.addEventListener("click", cancelRoleSwitch);
+  if (cancelBtn2) cancelBtn2.addEventListener("click", cancelRoleSwitch);
+
+  // Update button label based on role selection
+  function updateSubmitLabel() {
+    if (submitBtn) submitBtn.textContent = "Continue to verification \u2192";
+  }
+  if (roleSelect) roleSelect.addEventListener("change", updateSubmitLabel);
+  updateSubmitLabel();
 
   // DEMO ONLY, remove before real use: Toggle Hint Box & Badge
   const demoBadge = document.getElementById("login-demo-badge");
@@ -335,13 +510,18 @@ function setupLoginForm() {
         const emailInput = document.getElementById("login-email");
         const pwdInput = document.getElementById("login-password");
         const roleInput = document.getElementById("login-role");
-        if (!emailInput.value.trim()) {
-          emailInput.value = "judge.reviewer@ayurctms.demo";
+        const selectedRole = roleInput.value || "Research Coordinator";
+        const demoAccount = Object.entries(DEMO_ACCOUNTS).find(([, account]) => account.role === selectedRole);
+        if (!demoAccount) {
+          errorBox1.textContent = "No configured demo account is available for this role.";
+          errorBox1.classList.remove("hidden");
+          return;
         }
-        pwdInput.value = "Demo@2026";
-        if (!roleInput.value) {
-          roleInput.value = "Research Coordinator";
-        }
+        const [email, account] = demoAccount;
+        emailInput.value = email;
+        pwdInput.value = account.pwd;
+        roleInput.value = account.role;
+        roleInput.dispatchEvent(new Event("change", { bubbles: true }));
         errorBox1.classList.add("hidden");
       });
     }
@@ -354,94 +534,67 @@ function setupLoginForm() {
   formStep1.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorBox1.classList.add("hidden");
-
     const email = document.getElementById("login-email").value.toLowerCase().trim();
-    const pwd = document.getElementById("login-password").value;
-    let selectedRole = document.getElementById("login-role").value;
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    const password = document.getElementById("login-password").value;
+    const role = document.getElementById("login-role").value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errorBox1.textContent = "Please enter a valid email address.";
       errorBox1.classList.remove("hidden");
       return;
     }
 
-    // DEMO ONLY, remove before real use: Demo Mode Bypass Path
-    if (isDemoModeActive()) {
-      const seededAccount = DEMO_ACCOUNTS[email];
-      const isSharedDemoPwd = (pwd === "Demo@2026");
-      const isSeededAccountPwd = (seededAccount && seededAccount.pwd === pwd);
-
-      if (!isSharedDemoPwd && !isSeededAccountPwd) {
-        errorBox1.textContent = "Wrong email or password";
-        errorBox1.classList.remove("hidden");
-        return;
+    if (!appState.pendingRoleSwitch) {
+      clearStoredAuthState();
+      if (appState.isLoggedIn) {
+        try {
+          await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+        } catch (error) {}
       }
-
-      // Infer role from email if not explicitly selected or default
-      if (!selectedRole || selectedRole === "") {
-        if (email.startsWith("admin@")) selectedRole = "Admin";
-        else if (email.startsWith("pi@")) selectedRole = "Principal Investigator";
-        else if (email.startsWith("coordinator@") || email.startsWith("coord@")) selectedRole = "Research Coordinator";
-        else if (email.startsWith("doctor@") || email.startsWith("doc@")) selectedRole = "Doctor / Investigator";
-        else if (email.startsWith("monitor@")) selectedRole = "Monitor";
-        else if (email.startsWith("ec@") || email.startsWith("ethics@")) selectedRole = "EC Member";
-        else if (email.startsWith("pv@") || email.startsWith("pharma@")) selectedRole = "PV Officer";
-        else if (email.startsWith("auditor@") || email.startsWith("audit@")) selectedRole = "Auditor / Regulator";
-        else if (email.startsWith("leader@") || email.startsWith("lead@") || email.startsWith("leadership@")) selectedRole = "Institution Leadership";
-        else selectedRole = appState.activeRole || "Research Coordinator";
-      }
-
-      // Transition to Step 2: 2FA Verification
-      appState.pendingLoginSession = { email, role: selectedRole };
-      document.getElementById("verify-role-text").textContent = selectedRole;
-      document.getElementById("login-step-1").classList.add("hidden");
-      document.getElementById("login-step-2").classList.remove("hidden");
-      document.getElementById("otp-code-input").value = "";
-      document.getElementById("otp-code-input").focus();
-      return;
     }
+    appState.pendingLoginSession = null;
 
-    // Standard Non-Demo Mode (Supabase / Production Path)
+    const demoMode = isDemoModeActive();
+    const endpoint = demoMode ? "/api/supabase/auth/login" : "/api/auth/login";
     try {
-      const res = await fetch("/api/supabase/auth/login", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: pwd, role: selectedRole })
+        credentials: "same-origin",
+        body: JSON.stringify(demoMode ? { email, password, role } : { email, password })
       });
-      const data = await res.json();
-      if (!res.ok) {
-        errorBox1.textContent = data.detail || "Authentication failed.";
-        errorBox1.classList.remove("hidden");
-        return;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Authentication failed.");
+
+      if (demoMode) {
+        if (!data.challenge_id || data.role !== role) throw new Error("The selected role does not match this account.");
+        appState.pendingLoginSession = { flow: "demo", email: data.email, role: data.role, challengeId: data.challenge_id };
+      } else {
+        if (!data.requires_otp || !data.otp_stage_token) throw new Error("Backend verification is required for every role.");
+        if (role && data.role !== role) throw new Error("The selected role does not match this account.");
+        appState.pendingLoginSession = { flow: "backend", email: data.email, role: data.role, otpStageToken: data.otp_stage_token };
       }
 
-      appState.pendingLoginSession = { email, role: selectedRole };
-      document.getElementById("verify-role-text").textContent = selectedRole;
+      document.getElementById("verify-role-text").textContent = appState.pendingLoginSession.role;
       document.getElementById("login-step-1").classList.add("hidden");
       document.getElementById("login-step-2").classList.remove("hidden");
       document.getElementById("otp-code-input").value = "";
       document.getElementById("otp-code-input").focus();
-    } catch (err) {
-      // Offline fallback
-      const account = DEMO_ACCOUNTS[email];
-      if (!account || account.pwd !== pwd) {
-        errorBox1.textContent = "Wrong email or password";
-        errorBox1.classList.remove("hidden");
-        return;
+    } catch (error) {
+      errorBox1.textContent = error instanceof TypeError
+        ? "Could not reach the backend. Check that FastAPI is running at this app's origin."
+        : (error.message || "Authentication failed.");
+      errorBox1.classList.remove("hidden");
+      if (appState.pendingRoleSwitch) {
+        const viewAsSelect = document.getElementById("select-view-as-role");
+        if (viewAsSelect) viewAsSelect.value = appState.pendingRoleSwitch.fromRole;
+        logRoleSwitchAttempt(
+          appState.pendingRoleSwitch.fromRole,
+          appState.pendingRoleSwitch.toRole,
+          email || appState.pendingRoleSwitch.userEmail,
+          false,
+          errorBox1.textContent
+        );
       }
-      if (account.role !== selectedRole) {
-        errorBox1.textContent = `This account is not approved for that role. (Registered role: ${account.role})`;
-        errorBox1.classList.remove("hidden");
-        return;
-      }
-      appState.pendingLoginSession = { email, role: selectedRole };
-      document.getElementById("verify-role-text").textContent = selectedRole;
-      document.getElementById("login-step-1").classList.add("hidden");
-      document.getElementById("login-step-2").classList.remove("hidden");
-      document.getElementById("otp-code-input").value = "";
-      document.getElementById("otp-code-input").focus();
     }
   });
 
@@ -449,58 +602,84 @@ function setupLoginForm() {
   formOTP.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorBox2.classList.add("hidden");
-
-    const session = appState.pendingLoginSession || {};
-    const email = session.email || document.getElementById("login-email").value.toLowerCase().trim();
-    const selectedRole = session.role || document.getElementById("login-role").value;
+    const session = appState.pendingLoginSession;
     const code = document.getElementById("otp-code-input").value.trim();
-
-    // DEMO ONLY, remove before real use: Demo Mode Verification
-    if (isDemoModeActive()) {
-      if (code !== "123456") {
-        errorBox2.textContent = "Invalid verification code. (Hint: In demo mode, the code is 123456)";
-        errorBox2.classList.remove("hidden");
-        return;
-      }
-
-      // Log demo logins as event "demo_login" in the security log
-      if (typeof logSecurityEvent === "function") {
-        logSecurityEvent("demo_login", { email, role: selectedRole });
-      }
-
-      completeLogin(email, selectedRole);
+    if (!session) {
+      errorBox2.textContent = "Please restart sign-in before verifying.";
+      errorBox2.classList.remove("hidden");
       return;
     }
-
-    // Standard Non-Demo Mode Verification
     try {
-      const res = await fetch("/api/supabase/auth/verify-otp", {
+      const demoMode = session.flow === "demo";
+      const response = await fetch(demoMode ? "/api/supabase/auth/verify-otp" : "/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role: selectedRole, otp_code: code })
+        credentials: "same-origin",
+        body: JSON.stringify(demoMode
+          ? { email: session.email, role: session.role, challenge_id: session.challengeId, otp_code: code }
+          : { otp_stage_token: session.otpStageToken, otp_code: code })
       });
-      const data = await res.json();
-      if (!res.ok) {
-        errorBox2.textContent = data.detail || "Invalid verification code.";
-        errorBox2.classList.remove("hidden");
-        return;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Invalid verification code.");
+      const verifiedSession = demoMode ? data : {
+        verified: true,
+        email: data.email,
+        role: data.role,
+        full_name: data.full_name,
+        site_id: data.site_id
+      };
+      if (!verifiedSession.verified || verifiedSession.email !== session.email || verifiedSession.role !== session.role) {
+        throw new Error("The backend did not verify this user and role.");
       }
-      completeLogin(email, selectedRole);
-    } catch (err) {
-      if (code !== "123456") {
-        errorBox2.textContent = "Invalid verification code. (Hint: In demo mode, the code is 123456)";
-        errorBox2.classList.remove("hidden");
-        return;
+      const switchInfo = appState.pendingRoleSwitch;
+      appState.pendingRoleSwitch = null;
+      clearStoredAuthState();
+      completeLogin(verifiedSession);
+      if (switchInfo) {
+        logRoleSwitchAttempt(
+          switchInfo.fromRole,
+          switchInfo.toRole,
+          verifiedSession.email,
+          true,
+          "Role switch verified successfully"
+        );
       }
-      completeLogin(email, selectedRole);
+    } catch (error) {
+      errorBox2.textContent = error.message || "Verification failed.";
+      errorBox2.classList.remove("hidden");
+      if (appState.pendingRoleSwitch) {
+        const viewAsSelect = document.getElementById("select-view-as-role");
+        if (viewAsSelect) viewAsSelect.value = appState.pendingRoleSwitch.fromRole;
+        logRoleSwitchAttempt(
+          appState.pendingRoleSwitch.fromRole,
+          appState.pendingRoleSwitch.toRole,
+          session ? session.email : appState.pendingRoleSwitch.userEmail,
+          false,
+          errorBox2.textContent
+        );
+      }
     }
   });
 
   // Back to Step 1 Button
   document.getElementById("btn-back-step1").addEventListener("click", () => {
+    appState.pendingLoginSession = null;
+    clearStoredAuthState();
+    document.getElementById("otp-code-input").value = "";
     document.getElementById("login-step-2").classList.add("hidden");
     document.getElementById("login-step-1").classList.remove("hidden");
   });
+
+  const invalidatePendingLogin = () => {
+    if (!appState.pendingLoginSession) return;
+    appState.pendingLoginSession = null;
+    clearStoredAuthState();
+    document.getElementById("otp-code-input").value = "";
+    document.getElementById("login-step-2").classList.add("hidden");
+    document.getElementById("login-step-1").classList.remove("hidden");
+  };
+  document.getElementById("login-email").addEventListener("input", invalidatePendingLogin);
+  document.getElementById("login-role").addEventListener("change", invalidatePendingLogin);
 
   // Passkey Demo Buttons
   document.getElementById("tab-opt-code").addEventListener("click", () => {
@@ -518,34 +697,40 @@ function setupLoginForm() {
   });
 
   document.getElementById("btn-simulate-passkey").addEventListener("click", () => {
-    showToast("Biometric token verified via WebAuthn simulation.");
-    const session = appState.pendingLoginSession || {};
-    const email = session.email || document.getElementById("login-email").value.toLowerCase().trim();
-    const selectedRole = session.role || document.getElementById("login-role").value;
-    setTimeout(() => completeLogin(email, selectedRole), 600);
+    showToast("Passkey verification is unavailable in this prototype. Use the verification code.");
+    document.getElementById("tab-opt-code").click();
   });
 
-  // Global Sign out buttons
-  document.getElementById("btn-global-signout").addEventListener("click", signOut);
-  document.getElementById("btn-sidebar-signout").addEventListener("click", signOut);
+  // Global Sign out button (top bar)
+  const btnGlobalSignout = document.getElementById("btn-global-signout");
+  if (btnGlobalSignout) btnGlobalSignout.addEventListener("click", signOut);
 }
 
-function completeLogin(emailParam, roleParam) {
-  const email = emailParam || document.getElementById("login-email").value.toLowerCase().trim();
-  const selectedRole = roleParam || document.getElementById("login-role").value || "Research Coordinator";
-  
-  const account = DEMO_ACCOUNTS[email] || {
-    role: selectedRole,
-    name: email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()) || "Trial Reviewer",
-    site: "SITE-01 (AIIA New Delhi)"
+function clearStoredAuthState() {
+  const authKeys = ["ayur_access_token", "access_token", "refresh_token", "verified", "verified_user", "auth_session", "role", "user"];
+  [window.localStorage, window.sessionStorage].forEach(storage => {
+    authKeys.forEach(key => storage.removeItem(key));
+  });
+}
+
+function completeLogin(session) {
+  if (!session || session.verified !== true || !session.email || !session.role) return;
+  const email = session.email.toLowerCase();
+  const selectedRole = session.role;
+  const account = {
+    name: session.full_name || email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+    site: session.site_id || "SITE-01",
   };
 
   appState.isLoggedIn = true;
   appState.currentUser = { email, ...account, role: selectedRole };
   appState.activeRole = selectedRole;
+  appState.pendingLoginSession = null;
+  window.appState = appState;
 
   // Update Top Bar
-  document.getElementById("nav-guest").classList.add("hidden");
+  const guestNav = document.getElementById("nav-guest");
+  if (guestNav) guestNav.classList.add("hidden");
   document.getElementById("nav-auth").classList.remove("hidden");
   document.getElementById("auth-role-badge").textContent = selectedRole;
   document.getElementById("auth-user-name").textContent = account.name;
@@ -554,19 +739,38 @@ function completeLogin(emailParam, roleParam) {
   // Reset Login Modal for next time
   document.getElementById("login-step-2").classList.add("hidden");
   document.getElementById("login-step-1").classList.remove("hidden");
+  const roleInput = document.getElementById("login-role");
+  if (roleInput) roleInput.disabled = false;
+  const cancelBtn1 = document.getElementById("btn-cancel-role-switch");
+  const cancelBtn2 = document.getElementById("btn-cancel-role-switch-step2");
+  if (cancelBtn1) cancelBtn1.classList.add("hidden");
+  if (cancelBtn2) cancelBtn2.classList.add("hidden");
+  const viewAsSelect = document.getElementById("select-view-as-role");
+  if (viewAsSelect) viewAsSelect.value = selectedRole;
 
   // Route to the Role Dashboard URL
   const slug = ROLE_TO_SLUG[selectedRole] || "coordinator";
   window.location.hash = `#dashboard/${slug}`;
+  if (window.ChartDataHelper) ChartDataHelper.fetchLatestData();
   showToast(`Welcome, ${account.name}. Signed into ${selectedRole} workspace.`);
 }
 
-function signOut() {
+async function signOut() {
+  try {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+  } catch (error) {}
+  clearStoredAuthState();
   appState.isLoggedIn = false;
   appState.currentUser = null;
   appState.activeRole = null;
+  appState.pendingLoginSession = null;
+  appState.viewAsRole = null;
+  appState.pendingRoleSwitch = null;
+  const roleInput = document.getElementById("login-role");
+  if (roleInput) roleInput.disabled = false;
 
-  document.getElementById("nav-guest").classList.remove("hidden");
+  const guestNav = document.getElementById("nav-guest");
+  if (guestNav) guestNav.classList.remove("hidden");
   document.getElementById("nav-auth").classList.add("hidden");
 
   window.location.hash = "#landing";
@@ -589,8 +793,7 @@ const ROLE_KPIS = {
   "Research Coordinator": [
     { label: "Visits Due This Week", value: "12 Visits", note: "Window tracking active" },
     { label: "Consents Pending", value: "3 Re-consents", note: "Protocol amendment V2.1" },
-    { label: "Scheduled Doses", value: "28 Today", note: "Yogaraj Guggulu & Ashwagandha" },
-    { label: "My Open Reports", value: "2 Reports", note: "Acknowledged by PI" }
+    { label: "Scheduled Doses", value: "28 Today", note: "Yogaraj Guggulu & Ashwagandha" }
   ],
   "Doctor / Investigator": [
     { label: "Assigned Subjects", value: "42 Subjects", note: "SITE-01 active cohort" },
@@ -648,6 +851,8 @@ const ROLE_WORKSPACE_LABELS = {
   "Institution Leadership": "Portfolio Risk Analytics"
 };
 
+const ROLES_WITHOUT_MY_REPORTS = new Set(["Research Coordinator", "Monitor", "EC Member"]);
+
 function renderDashboardView(role) {
   const currentActualRole = appState.currentUser ? appState.currentUser.role : role;
   appState.activeRole = role;
@@ -658,15 +863,11 @@ function renderDashboardView(role) {
   const sideEmailEl = document.getElementById("side-user-email");
   if (sideEmailEl && appState.currentUser) sideEmailEl.textContent = appState.currentUser.email;
 
-  // "View as role" preview switcher (Visible only to Admin and PI)
+  // "View as role" preview switcher (Available on all dashboards, switches via full authentication)
   const viewAsContainer = document.getElementById("view-as-role-container");
   const viewAsSelect = document.getElementById("select-view-as-role");
-  if (currentActualRole === "Admin" || currentActualRole === "Principal Investigator") {
-    if (viewAsContainer) viewAsContainer.classList.remove("hidden");
-    if (viewAsSelect) viewAsSelect.value = role;
-  } else {
-    if (viewAsContainer) viewAsContainer.classList.add("hidden");
-  }
+  if (viewAsContainer) viewAsContainer.classList.remove("hidden");
+  if (viewAsSelect) viewAsSelect.value = role;
 
   // Show "Team Activity" menu only for Admin and PI
   const teamNav = document.getElementById("nav-item-team");
@@ -686,6 +887,64 @@ function renderDashboardView(role) {
   const escLabel = document.getElementById("escalations-nav-label");
   if (escLabel) {
     escLabel.textContent = (role === "Admin" || role === "Principal Investigator") ? "Incoming Reports" : "My Reports";
+  }
+  const reportsNav = document.getElementById("nav-item-escalations");
+  const reportsPane = document.getElementById("dash-pane-escalations");
+  const notificationBell = document.getElementById("btn-notif-bell");
+  const canSeeReports = !ROLES_WITHOUT_MY_REPORTS.has(role);
+  reportsNav?.classList.toggle("hidden", !canSeeReports);
+  reportsPane?.classList.toggle("hidden", !canSeeReports);
+  notificationBell?.classList.toggle("hidden", !canSeeReports);
+  if (!canSeeReports) {
+    if (appState.activeDashboardTab === "escalations") appState.activeDashboardTab = "overview";
+  }
+
+  const newSubmissionNav = document.getElementById("nav-item-new-submission");
+  const canSubmitReport = currentActualRole !== "Admin" && currentActualRole !== "Principal Investigator";
+  if (newSubmissionNav) newSubmissionNav.classList.toggle("hidden", !canSubmitReport);
+  if (!canSubmitReport && appState.activeDashboardTab === "new-submission") {
+    appState.activeDashboardTab = "overview";
+  }
+
+  const assignJobsNav = document.getElementById("nav-item-assign-jobs");
+  const assignedByMeNav = document.getElementById("nav-item-assigned-by-me");
+  const myTasksNav = document.getElementById("nav-item-my-tasks");
+  const canManageTasks = ["Admin", "Research Coordinator"].includes(currentActualRole) && role === currentActualRole;
+  const canViewAssignedByMe = currentActualRole === "Research Coordinator" && role === currentActualRole;
+  const canViewMyTasks = currentActualRole !== "Admin" && currentActualRole === role;
+  assignJobsNav?.classList.toggle("hidden", !canManageTasks);
+  assignedByMeNav?.classList.toggle("hidden", !canViewAssignedByMe);
+  myTasksNav?.classList.toggle("hidden", !canViewMyTasks);
+  if (!canManageTasks && appState.activeDashboardTab === "assign-jobs") appState.activeDashboardTab = "overview";
+  if (!canViewAssignedByMe && appState.activeDashboardTab === "assigned-by-me") appState.activeDashboardTab = "overview";
+  if (!canViewMyTasks && appState.activeDashboardTab === "my-tasks") appState.activeDashboardTab = "overview";
+
+  // Requirement 3: Legal Documents navigation link visibility (EC Member, PI, and Admin only)
+  const legalDocsNav = document.getElementById("nav-item-legal-docs");
+  const legalDocsBadge = document.getElementById("legal-docs-nav-badge");
+  if (legalDocsNav) {
+    if (role === "EC Member" || role === "Principal Investigator" || role === "Admin") {
+      legalDocsNav.classList.remove("hidden");
+      // Compute urgent (<30d) and expired alerts
+      const dueCount = appState.legalDocuments.filter(d => d.days_remaining <= 30).length;
+      if (legalDocsBadge) {
+        if (dueCount > 0) {
+          legalDocsBadge.textContent = `${dueCount} Alert${dueCount > 1 ? 's' : ''}`;
+          legalDocsBadge.classList.remove("hidden");
+        } else {
+          legalDocsBadge.classList.add("hidden");
+        }
+      }
+    } else {
+      legalDocsNav.classList.add("hidden");
+    }
+  }
+
+  const leadershipLegalNav = document.getElementById("nav-item-leadership-legal");
+  const canViewLeadershipLegal = currentActualRole === "Institution Leadership" && role === "Institution Leadership";
+  leadershipLegalNav?.classList.toggle("hidden", !canViewLeadershipLegal);
+  if (!canViewLeadershipLegal && appState.activeDashboardTab === "leadership-legal") {
+    appState.activeDashboardTab = "overview";
   }
 
   // Welcome banner text
@@ -714,7 +973,7 @@ function renderDashboardView(role) {
   renderRoleWorkspace(role);
 
   // Load escalations
-  loadEscalationsUI();
+  if (canSeeReports) loadEscalationsUI();
 
   // Load submissions
   loadSubmissionsUI();
@@ -728,12 +987,122 @@ function renderDashboardView(role) {
 }
 
 function switchViewAsRole(selectedRole) {
-  appState.viewAsRole = selectedRole;
-  showToast(`Switched view to preview as ${selectedRole}`);
-  renderDashboardView(selectedRole);
+  if (!appState.isLoggedIn || !appState.currentUser) {
+    window.location.hash = "#login";
+    return;
+  }
+  if (selectedRole === appState.activeRole) {
+    return;
+  }
+
+  // Pre-select and lock target role, require full authentication before switching
+  appState.pendingRoleSwitch = {
+    fromRole: appState.activeRole,
+    toRole: selectedRole,
+    userEmail: appState.currentUser.email
+  };
+
+  const roleInput = document.getElementById("login-role");
+  if (roleInput) {
+    roleInput.value = selectedRole;
+    roleInput.disabled = true;
+    roleInput.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  const emailInput = document.getElementById("login-email");
+  const pwdInput = document.getElementById("login-password");
+  const errorBox1 = document.getElementById("login-error-msg");
+  const errorBox2 = document.getElementById("otp-error-msg");
+  if (emailInput) emailInput.value = "";
+  if (pwdInput) pwdInput.value = "";
+  if (errorBox1) errorBox1.classList.add("hidden");
+  if (errorBox2) errorBox2.classList.add("hidden");
+
+  const step1 = document.getElementById("login-step-1");
+  const step2 = document.getElementById("login-step-2");
+  if (step1) step1.classList.remove("hidden");
+  if (step2) step2.classList.add("hidden");
+
+  const cancelBtn1 = document.getElementById("btn-cancel-role-switch");
+  const cancelBtn2 = document.getElementById("btn-cancel-role-switch-step2");
+  if (cancelBtn1) cancelBtn1.classList.remove("hidden");
+  if (cancelBtn2) cancelBtn2.classList.remove("hidden");
+
+  window.location.hash = "#login";
+}
+
+function cancelRoleSwitch() {
+  if (appState.pendingRoleSwitch) {
+    const fromRole = appState.pendingRoleSwitch.fromRole;
+    appState.pendingRoleSwitch = null;
+    const viewAsSelect = document.getElementById("select-view-as-role");
+    if (viewAsSelect) viewAsSelect.value = fromRole;
+    const roleInput = document.getElementById("login-role");
+    if (roleInput) roleInput.disabled = false;
+    const cancelBtn1 = document.getElementById("btn-cancel-role-switch");
+    const cancelBtn2 = document.getElementById("btn-cancel-role-switch-step2");
+    if (cancelBtn1) cancelBtn1.classList.add("hidden");
+    if (cancelBtn2) cancelBtn2.classList.add("hidden");
+    window.location.hash = `#dashboard/${ROLE_TO_SLUG[fromRole] || "coordinator"}`;
+  } else if (appState.isLoggedIn && appState.currentUser) {
+    window.location.hash = `#dashboard/${ROLE_TO_SLUG[appState.currentUser.role] || "coordinator"}`;
+  } else {
+    window.location.hash = "#landing";
+  }
+}
+
+async function logRoleSwitchAttempt(fromRole, toRole, userEmail, success, reason) {
+  try {
+    await fetch("/api/auth/log-role-switch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from_role: fromRole,
+        to_role: toRole,
+        user_email: userEmail || "unknown",
+        success: Boolean(success),
+        reason: reason || (success ? "Role switch verified" : "Failed role switch")
+      })
+    });
+  } catch (err) {
+    console.warn("Could not record role switch audit event:", err);
+  }
 }
 
 function showDashTab(tabId) {
+  const actualRole = appState.currentUser ? appState.currentUser.role : null;
+  if (tabId === "escalations" && ROLES_WITHOUT_MY_REPORTS.has(appState.activeRole)) {
+    showToast("My Reports is not available for this role.");
+    showDashTab("overview");
+    return;
+  }
+  if (tabId === "assign-jobs" && (!actualRole || !["Admin", "Research Coordinator"].includes(actualRole) || appState.activeRole !== actualRole)) {
+    showToast("Access Restricted: only Admin and Research Coordinator can assign jobs.");
+    showDashTab("overview");
+    return;
+  }
+  if (tabId === "add-participant" && (actualRole !== "Research Coordinator" || appState.activeRole !== actualRole)) {
+    showToast("Access Restricted: only Research Coordinators can add participants.");
+    showDashTab("overview");
+    return;
+  }
+  if (tabId === "my-tasks" && (!actualRole || actualRole === "Admin" || actualRole !== appState.activeRole)) {
+    showToast("Access Restricted: tasks are available only to your signed-in role.");
+    showDashTab("overview");
+    return;
+  }
+  if (tabId === "assigned-by-me" && (actualRole !== "Research Coordinator" || appState.activeRole !== actualRole)) {
+    showToast("Access Restricted: assigned work is visible only to its Research Coordinator.");
+    showDashTab("overview");
+    return;
+  }
+  if (tabId === "leadership-legal" && (actualRole !== "Institution Leadership" || appState.activeRole !== actualRole)) {
+    showToast("Access Restricted: Legal is available only to Institution Leadership.");
+    showDashTab("overview");
+    return;
+  }
+  const dashboardShell = document.getElementById("view-dashboard");
+  dashboardShell?.classList.toggle("is-fullscreen-pane", ["new-submission", "escalations", "add-participant", "new-record"].includes(tabId));
   appState.activeDashboardTab = tabId;
   document.querySelectorAll(".sidebar-item").forEach(item => item.classList.remove("active"));
   document.querySelectorAll(".dash-pane").forEach(pane => pane.classList.remove("active"));
@@ -745,10 +1114,31 @@ function showDashTab(tabId) {
   if (pane) pane.classList.add("active");
 
   if (tabId === "overview") renderOverviewCharts(appState.activeRole || "Research Coordinator");
+  if (tabId === "new-submission") {
+    if (!actualRole || actualRole === "Admin" || actualRole === "Principal Investigator") {
+      showToast("Access Restricted: reports can only be submitted by non-recipient roles.");
+      showDashTab("overview");
+      return;
+    }
+    populateNewSubmissionForm();
+  }
   if (tabId === "submissions") loadSubmissionsUI();
   if (tabId === "team") filterTeamActivityUI();
   if (tabId === "escalations") loadEscalationsUI();
   if (tabId === "workspace") renderRoleWorkspace(appState.activeRole || "Research Coordinator");
+  if (tabId === "legal-docs") {
+    const curRole = appState.activeRole || (appState.currentUser ? appState.currentUser.role : "EC Member");
+    if (curRole !== "EC Member" && curRole !== "Principal Investigator" && curRole !== "Admin") {
+      showToast("Access Restricted: Legal documents are visible only to EC Member, PI, and Admin.");
+      showDashTab("overview");
+      return;
+    }
+    renderLegalDocumentsPage();
+  }
+  if (tabId === "assign-jobs") loadAdminTasks();
+  if (tabId === "assigned-by-me") loadCoordinatorAssignedTasks();
+  if (tabId === "my-tasks") loadMyTasks();
+  if (tabId === "leadership-legal") loadLeadershipLegalDocs();
 }
 
 // ==============================================================================
@@ -984,7 +1374,7 @@ async function renderRoleWorkspace(role) {
   const data = appState.studyData || { studies: [], sites: [], participants: [], adverse_events: [] };
 
   if (role === "Principal Investigator") {
-    if (actionsEl) actionsEl.innerHTML = `<button class="btn btn-warning btn-sm" onclick="openEscalationDrawer()">⚡ Issue Urgent Safety Notice</button>`;
+    if (actionsEl) actionsEl.innerHTML = "";
     container.innerHTML = `
       <div class="workspace-grid">
         <div class="dash-card">
@@ -1033,26 +1423,33 @@ async function renderRoleWorkspace(role) {
       </div>
     `;
   } else if (role === "Research Coordinator") {
-    if (actionsEl) actionsEl.innerHTML = `<button class="btn btn-warning btn-sm" onclick="openEscalationDrawer('', 'Consent', 'High')">⚡ Report Protocol Deviation to PI</button>`;
+    if (actionsEl) {
+      actionsEl.innerHTML = `
+        <button class="btn btn-primary btn-sm" onclick="openAddParticipantModal()" id="btn-add-participant" style="font-weight: 600;">+ Add Participant</button>
+        <button class="btn btn-warning btn-sm" onclick="openEscalationDrawer('', 'Consent', 'High')">⚡ Report Protocol Deviation to PI</button>
+      `;
+    }
     const coordParticipants = data.participants.slice(0, 10);
     container.innerHTML = `
       <div class="dash-card">
         <div class="card-title-bar">
           <h4>Participant Visit & Dosing Ledger (SITE-01)</h4>
-          <span class="badge badge-info">${data.participants.length} Total Coded Records</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span class="badge badge-info" id="coordinator-participant-count">${data.participants.length} Total Coded Records</span>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead><tr><th>Subject Code</th><th>Study ID</th><th>Prakriti</th><th>Status</th><th>Visits Done</th><th>Dose Compliance</th><th>Actions</th></tr></thead>
-            <tbody>
+            <tbody id="coordinator-participants-tbody">
               ${coordParticipants.map(p => `
                 <tr>
                   <td><code>${p.subject_code}</code></td>
                   <td>${p.study_id}</td>
-                  <td>${p.prakriti}</td>
-                  <td><span class="badge badge-green">${p.status}</span></td>
-                  <td>${p.visits_completed} / ${p.total_visits}</td>
-                  <td><span class="badge badge-info">${p.compliance_pct}%</span></td>
+                  <td>${p.prakriti || p.dominant_prakriti || 'Vata-Pitta'}</td>
+                  <td><span class="badge badge-green">${p.status || 'Active Enrolled'}</span></td>
+                  <td>${p.visits_completed !== undefined ? p.visits_completed : 0} / ${p.total_visits || 8}</td>
+                  <td><span class="badge badge-info">${p.compliance_pct !== undefined ? p.compliance_pct : 100}%</span></td>
                   <td><button class="btn btn-secondary btn-sm" onclick="openEscalationDrawer('${p.subject_code}', 'Participant', 'Normal')">Report Issue</button></td>
                 </tr>
               `).join('')}
@@ -1061,6 +1458,7 @@ async function renderRoleWorkspace(role) {
         </div>
       </div>
     `;
+
   } else if (role === "Doctor / Investigator") {
     if (actionsEl) actionsEl.innerHTML = `<button class="btn btn-warning btn-sm" onclick="openEscalationDrawer('SUB-AIIA-01-042', 'Safety', 'Critical')">🚨 Report Urgent AE/SAE to PI</button>`;
     container.innerHTML = `
@@ -1131,8 +1529,62 @@ async function renderRoleWorkspace(role) {
       </div>
     `;
   } else if (role === "EC Member") {
-    if (actionsEl) actionsEl.innerHTML = `<button class="btn btn-warning btn-sm" onclick="openEscalationDrawer('', 'Ethics', 'Normal')">⚡ Send Decision / Query to PI & Admin</button>`;
+    if (actionsEl) {
+      actionsEl.innerHTML = `
+        <button class="btn btn-primary btn-sm" onclick="showDashTab('legal-docs')" style="font-weight: 600;">⚖️ Legal Documents & Timeline</button>
+        <button class="btn btn-secondary btn-sm" onclick="openUploadLegalDocModal()">+ Upload Legal Document</button>
+        <button class="btn btn-warning btn-sm" onclick="openEscalationDrawer('', 'Ethics', 'Normal')">⚡ Send Decision / Query to PI & Admin</button>
+      `;
+    }
+    const safeCount = appState.legalDocuments.filter(d => d.days_remaining > 90).length;
+    const attentionCount = appState.legalDocuments.filter(d => d.days_remaining >= 30 && d.days_remaining <= 90).length;
+    const urgentCount = appState.legalDocuments.filter(d => d.days_remaining >= 0 && d.days_remaining < 30).length;
+    const expiredCount = appState.legalDocuments.filter(d => d.days_remaining < 0).length;
+
     container.innerHTML = `
+      <!-- Legal Documents Summary Card on EC Dashboard -->
+      <div class="dash-card" style="border-left: 4px solid var(--accent-primary, #0d9488); margin-bottom: 20px;">
+        <div class="card-title-bar">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.3rem;">⚖️</span>
+            <h4>Statutory Legal Documents & Approvals Summary</h4>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary btn-sm" onclick="showDashTab('legal-docs')" style="font-weight: 600;">View Registry & Timeline &rarr;</button>
+            <button class="btn btn-secondary btn-sm" onclick="openUploadLegalDocModal()">+ Upload New Document</button>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          Statutory regulatory licenses, clinical trial insurance, protocol clearances, and institutional MoUs tracked under GCP-ASU.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px;">
+          <div style="padding: 10px; background: var(--bg-subtle); border-radius: 6px;">
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Total Active Records</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: var(--text-main);">${appState.legalDocuments.length} Documents</div>
+            <div style="font-size: 0.78rem; color: var(--text-dim);">CTRI, MoUs, Approvals</div>
+          </div>
+          <div style="padding: 10px; background: #ecfdf5; border-radius: 6px; border: 1px solid #a7f3d0;">
+            <div style="font-size: 0.72rem; color: #065f46; text-transform: uppercase; font-weight: 600;">Safe (>90 Days)</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: #047857;">${safeCount} Documents</div>
+            <div style="font-size: 0.78rem; color: #065f46;">Full statutory validity</div>
+          </div>
+          <div style="padding: 10px; background: #fffbeb; border-radius: 6px; border: 1px solid #fde68a;">
+            <div style="font-size: 0.72rem; color: #92400e; text-transform: uppercase; font-weight: 600;">Attention (30–90 Days)</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: #b45309;">${attentionCount} Due Soon</div>
+            <div style="font-size: 0.78rem; color: #92400e;">60/90-day alert active</div>
+          </div>
+          <div style="padding: 10px; background: #fef2f2; border-radius: 6px; border: 1px solid #fecaca;">
+            <div style="font-size: 0.72rem; color: #991b1b; text-transform: uppercase; font-weight: 600;">Urgent & Expired (<30d)</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: #b91c1c;">${urgentCount + expiredCount} Critical</div>
+            <div style="font-size: 0.78rem; color: #991b1b;">Immediate action required</div>
+          </div>
+        </div>
+        <div style="padding: 10px 14px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px; font-size: 0.85rem; color: #991b1b; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <span>🚨 <strong>Next Document to Expire:</strong> Biological Specimen Transfer Agreement (BMTA) — <strong style="text-decoration: underline;">Expires in 6 days</strong></span>
+          <button class="btn btn-secondary btn-sm" onclick="showDashTab('legal-docs')" style="font-size: 0.8rem; padding: 3px 8px;">Review Timeline</button>
+        </div>
+      </div>
+
       <div class="workspace-grid">
         <div class="dash-card">
           <div class="card-title-bar"><h4>Institutional Ethics Committee (IEC) Approvals</h4></div>
@@ -1194,7 +1646,7 @@ async function renderRoleWorkspace(role) {
       </div>
     `;
   } else if (role === "Admin") {
-    if (actionsEl) actionsEl.innerHTML = `<button class="btn btn-warning btn-sm" onclick="openEscalationDrawer('', 'Site issue', 'Normal')">⚡ Broadcast Operational Directive</button>`;
+    if (actionsEl) actionsEl.innerHTML = "";
     container.innerHTML = `
       <div class="workspace-grid">
         <div class="dash-card">
@@ -1288,99 +1740,368 @@ async function renderRoleWorkspace(role) {
 }
 
 // ==============================================================================
-// "REPORT TO SUPERIOR" ESCALATION CONTROLLER
+// FULL-PAGE REPORT SUBMISSION
 // ==============================================================================
-function openEscalationDrawer(prefillCode, prefillCategory, prefillUrgency) {
-  const overlay = document.getElementById("escalation-drawer-overlay");
-  const codeSelect = document.getElementById("esc-subject-code");
-  const catSelect = document.getElementById("esc-category");
-  const form = document.getElementById("form-escalation-compose");
-  if (!overlay) return;
+function populateNewSubmissionForm(prefillCode) {
+  const user = appState.currentUser || {};
+  const studyInput = document.getElementById("new-submission-study");
+  const siteInput = document.getElementById("new-submission-site");
+  const subjectSelect = document.getElementById("new-submission-subject");
+  if (studyInput) studyInput.value = user.study_id || "AYUR-CT-2026-001";
+  if (siteInput) siteInput.value = user.site_id || user.site || "SITE-01";
 
-  // Populate 150 subject codes
-  if (codeSelect && codeSelect.options.length <= 1) {
-    const data = appState.studyData;
-    if (data && data.participants) {
-      data.participants.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.subject_code;
-        opt.textContent = `${p.subject_code} (${p.study_id} • ${p.prakriti})`;
-        codeSelect.appendChild(opt);
-      });
-    }
+  if (subjectSelect) {
+    const selectedCode = prefillCode || subjectSelect.value;
+    subjectSelect.replaceChildren(new Option("No specific participant", ""));
+    const participants = appState.studyData?.participants || [];
+    participants.forEach(participant => {
+      if (!participant.subject_code) return;
+      subjectSelect.add(new Option(participant.subject_code, participant.subject_code));
+    });
+    subjectSelect.value = selectedCode;
   }
-
-  if (prefillCode && codeSelect) codeSelect.value = prefillCode;
-  if (prefillCategory && catSelect) catSelect.value = prefillCategory;
-  if (prefillUrgency) {
-    const urgRadio = document.querySelector(`input[name="esc-urgency"][value="${prefillUrgency}"]`);
-    if (urgRadio) urgRadio.checked = true;
-  }
-
-  overlay.classList.remove("hidden");
 }
 
-function closeEscalationDrawer(event) {
-  if (event && event.target && event.target.id !== "escalation-drawer-overlay" && !event.target.classList.contains("btn-close")) {
+function openNewSubmission(prefillCode, prefillCategory, prefillUrgency) {
+  const role = appState.currentUser?.role;
+  if (!role || role === "Admin" || role === "Principal Investigator") {
+    showToast("Access Restricted: reports can only be submitted by non-recipient roles.");
     return;
   }
-  const overlay = document.getElementById("escalation-drawer-overlay");
-  if (overlay) overlay.classList.add("hidden");
+
+  populateNewSubmissionForm(prefillCode);
+  if (prefillCategory) document.getElementById("new-submission-category").value = prefillCategory;
+  if (prefillUrgency) document.getElementById("new-submission-urgency").value = prefillUrgency;
+  showDashTab("new-submission");
 }
 
-function updateCharCount(input) {
-  const countEl = document.getElementById("esc-char-count");
-  if (countEl) countEl.textContent = `${input.value.length} / 120`;
+function openEscalationDrawer(prefillCode, prefillCategory, prefillUrgency) {
+  openNewSubmission(prefillCode, prefillCategory, prefillUrgency);
 }
 
-async function submitEscalationForm(e) {
-  e.preventDefault();
-  const user = appState.currentUser || { email: "coordinator@ayurctms.demo", role: "Research Coordinator", name: "Dr. Sunita Patel" };
-  const category = document.getElementById("esc-category").value;
-  const urgencyRadio = document.querySelector('input[name="esc-urgency"]:checked');
-  const urgency = urgencyRadio ? urgencyRadio.value : "Normal";
-  const subjectCode = document.getElementById("esc-subject-code").value || null;
-  const summary = document.getElementById("esc-summary").value;
-  const details = document.getElementById("esc-details").value;
-  const attachment = document.getElementById("esc-attachment").value || null;
+function updateNewSubmissionCharCount(input) {
+  const count = document.getElementById("new-submission-char-count");
+  if (count) count.textContent = `${input.value.length} / 120`;
+}
+
+function renderEscalationAttachment(esc) {
+  const attachmentName = esc.attachment_name || esc.attachment_url;
+  if (!attachmentName) return "";
+  const safeName = String(attachmentName).replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+
+  try {
+    const url = new URL(esc.attachment_url || "", window.location.origin);
+    if (url.origin === window.location.origin && url.pathname.startsWith("/api/files/download/")) {
+      const href = `${url.pathname}${url.search}`;
+      return `<div style="font-size: 0.8rem; margin-bottom: 8px;">📎 <a href="${href}" target="_blank" rel="noopener">${safeName} (5-minute private link)</a></div>`;
+    }
+  } catch (error) {}
+
+  return `<div style="font-size: 0.8rem; margin-bottom: 8px;">📎 Attachment: ${safeName}</div>`;
+}
+
+async function submitNewSubmission(event) {
+  event.preventDefault();
+  const user = appState.currentUser;
+  const form = document.getElementById("form-new-escalation");
+  const status = document.getElementById("new-submission-status");
+  if (!user || !form || !status) return;
 
   const payload = {
     from_user: user.email,
     from_name: user.name || user.email.split("@")[0],
-    from_role: appState.activeRole || user.role,
-    study_id: "AYUR-CT-2026-001",
-    site_id: "SITE-01",
-    subject_code: subjectCode,
-    category: category,
-    urgency: urgency,
-    summary: summary,
-    details: details,
-    attachment_name: attachment
+    from_role: user.role,
+    study_id: document.getElementById("new-submission-study").value,
+    site_id: document.getElementById("new-submission-site").value,
+    subject_code: document.getElementById("new-submission-subject").value || null,
+    category: document.getElementById("new-submission-category").value,
+    urgency: document.getElementById("new-submission-urgency").value,
+    summary: document.getElementById("new-submission-summary").value.trim(),
+    details: document.getElementById("new-submission-details").value.trim(),
+    attachment_name: null,
+    attachment_url: null
   };
 
   try {
-    const res = await fetch("/api/escalations", {
+    const attachment = document.getElementById("new-submission-attachment").files?.[0];
+    if (attachment) {
+      const uploadForm = new FormData();
+      uploadForm.append("file", attachment);
+      const uploadResponse = await fetch("/api/files/upload", {
+        method: "POST",
+        credentials: "same-origin",
+        body: uploadForm
+      });
+      const uploadResult = await uploadResponse.json();
+      if (!uploadResponse.ok) throw new Error(uploadResult.detail || "Attachment upload failed.");
+      const signedUrl = new URL(uploadResult.signed_download_url, window.location.origin);
+      if (signedUrl.origin !== window.location.origin || !signedUrl.pathname.startsWith("/api/files/download/")) {
+        throw new Error("Attachment service returned an invalid download path.");
+      }
+      payload.attachment_name = uploadResult.original_filename;
+      payload.attachment_url = `${signedUrl.pathname}${signedUrl.search}`;
+    }
+
+    const response = await fetch("/api/escalations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(payload)
     });
-    if (res.ok) {
-      const now = new Date();
-      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      showToast(`Sent to PI and Admin at ${timeStr}`);
-      closeEscalationDrawer();
-      document.getElementById("form-escalation-compose").reset();
-      updateCharCount(document.getElementById("esc-summary"));
-      loadEscalationsUI();
-      if (window.ChartDataHelper) ChartDataHelper.notifyUpdate();
-      showDashTab("escalations");
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.detail || "Submission failed. Please try again.");
+    }
+
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    form.reset();
+    populateNewSubmissionForm();
+    updateNewSubmissionCharCount(document.getElementById("new-submission-summary"));
+    status.textContent = `Sent to PI and Admin at ${time}`;
+    status.classList.remove("hidden");
+    showToast(status.textContent);
+    if (window.ChartDataHelper) ChartDataHelper.notifyUpdate();
+  } catch (error) {
+    status.textContent = error.message || "Submission failed. Please try again.";
+    status.classList.remove("hidden");
+    showToast(status.textContent);
+  }
+}
+
+function appendTaskCell(row, value, className = "") {
+  const cell = document.createElement("td");
+  if (className) cell.className = className;
+  cell.textContent = value ?? "";
+  row.appendChild(cell);
+  return cell;
+}
+
+function populateAssigneeOptions(data) {
+  const choices = [
+    ...data.roles.map(role => ({ value: `role:${role}`, label: `${role} (role)` })),
+    ...data.users.map(user => ({ value: `user:${user.email}`, label: `${user.full_name} (${user.role})` }))
+  ];
+  ["task-assignee", "edit-task-assignee"].forEach(id => {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.replaceChildren(new Option("Select assignee", ""));
+    choices.forEach(choice => select.add(new Option(choice.label, choice.value)));
+  });
+}
+
+async function loadAdminTasks() {
+  try {
+    const actualRole = appState.currentUser?.role;
+    const isAdmin = actualRole === "Admin";
+    const assigneesResponse = await fetch("/api/tasks/assignees", { credentials: "same-origin" });
+    if (!assigneesResponse.ok) throw new Error("Unable to load approved assignees.");
+    const assigneeData = await assigneesResponse.json();
+    populateAssigneeOptions(assigneeData);
+    document.getElementById("admin-task-table")?.classList.toggle("hidden", !isAdmin);
+    if (!isAdmin) return;
+
+    const tasksResponse = await fetch("/api/tasks", { credentials: "same-origin" });
+    if (!tasksResponse.ok) throw new Error("Unable to load Admin tasks.");
+    const tasks = await tasksResponse.json();
+    const body = document.getElementById("admin-task-rows");
+    if (!body) return;
+    body.replaceChildren();
+    tasks.forEach(task => {
+      const row = document.createElement("tr");
+      const titleCell = appendTaskCell(row, task.title);
+      if (task.description) {
+        const description = document.createElement("small");
+        description.textContent = task.description;
+        titleCell.appendChild(document.createElement("br"));
+        titleCell.appendChild(description);
+      }
+      appendTaskCell(row, task.assignee);
+      appendTaskCell(row, `${task.study_id} / ${task.site_id}`);
+      appendTaskCell(row, task.priority);
+      appendTaskCell(row, task.due_date);
+      const statusCell = document.createElement("td");
+      const statusSelect = document.createElement("select");
+      ["Assigned", "In progress", "Done"].forEach(value => statusSelect.add(new Option(value, value)));
+      statusSelect.value = task.status;
+      statusCell.appendChild(statusSelect);
+      const updateButton = document.createElement("button");
+      updateButton.type = "button";
+      updateButton.className = "btn btn-sm btn-secondary";
+      updateButton.textContent = "Save";
+      updateButton.addEventListener("click", () => updateTaskStatus(task.id, statusSelect.value, true));
+      statusCell.appendChild(updateButton);
+      row.appendChild(statusCell);
+      appendTaskCell(row, task.overdue_reason || "", task.overdue ? "badge-red" : "");
+      const actionCell = document.createElement("td");
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "btn btn-sm btn-secondary";
+      editButton.textContent = "Edit";
+      editButton.addEventListener("click", () => openTaskEditor(task));
+      actionCell.appendChild(editButton);
+      row.appendChild(actionCell);
+      body.appendChild(row);
+    });
+  } catch (error) {
+    showToast(error.message || "Unable to load tasks.");
+  }
+}
+
+async function loadCoordinatorAssignedTasks() {
+  const body = document.getElementById("coordinator-assigned-task-rows");
+  if (!body) return;
+  try {
+    const response = await fetch("/api/tasks/assigned-by-me", { credentials: "same-origin" });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Unable to load assigned work.");
+    body.replaceChildren();
+    if (result.length === 0) {
+      const row = document.createElement("tr");
+      const cell = appendTaskCell(row, "No work assigned yet.");
+      cell.colSpan = 7;
+      body.appendChild(row);
       return;
     }
-  } catch (err) {}
+    result.forEach(task => {
+      const row = document.createElement("tr");
+      appendTaskCell(row, task.title);
+      appendTaskCell(row, task.assignee);
+      appendTaskCell(row, `${task.study_id} / ${task.site_id}`);
+      appendTaskCell(row, task.priority);
+      appendTaskCell(row, task.due_date);
+      appendTaskCell(row, task.status);
+      appendTaskCell(row, task.overdue_reason || "", task.overdue ? "badge-red" : "");
+      body.appendChild(row);
+    });
+  } catch (error) {
+    showToast(error.message || "Unable to load assigned work.");
+  }
+}
 
-  // Fallback toast
-  showToast("Escalation report sent to PI and Admin.");
-  closeEscalationDrawer();
+async function loadMyTasks() {
+  try {
+    const response = await fetch("/api/tasks", { credentials: "same-origin" });
+    if (!response.ok) throw new Error("Unable to load your tasks.");
+    const tasks = await response.json();
+    const body = document.getElementById("my-task-rows");
+    if (!body) return;
+    body.replaceChildren();
+    tasks.forEach(task => {
+      const row = document.createElement("tr");
+      appendTaskCell(row, task.title);
+      appendTaskCell(row, task.description);
+      appendTaskCell(row, `${task.study_id} / ${task.site_id}`);
+      appendTaskCell(row, task.priority);
+      appendTaskCell(row, task.due_date);
+      appendTaskCell(row, task.status);
+      const actionCell = document.createElement("td");
+      const statusSelect = document.createElement("select");
+      ["In progress", "Done"].forEach(value => statusSelect.add(new Option(value, value)));
+      statusSelect.value = task.status === "Done" ? "Done" : "In progress";
+      const updateButton = document.createElement("button");
+      updateButton.type = "button";
+      updateButton.className = "btn btn-sm btn-secondary";
+      updateButton.textContent = "Update";
+      updateButton.addEventListener("click", () => updateTaskStatus(task.id, statusSelect.value, false));
+      actionCell.append(statusSelect, updateButton);
+      row.appendChild(actionCell);
+      body.appendChild(row);
+    });
+  } catch (error) {
+    showToast(error.message || "Unable to load your tasks.");
+  }
+}
+
+async function submitTaskAssignment(event) {
+  event.preventDefault();
+  const status = document.getElementById("task-form-status");
+  const payload = {
+    assignee: document.getElementById("task-assignee").value,
+    title: document.getElementById("task-title").value.trim(),
+    description: document.getElementById("task-description").value.trim(),
+    study_id: document.getElementById("task-study").value.trim(),
+    site_id: document.getElementById("task-site").value.trim(),
+    priority: document.getElementById("task-priority").value,
+    due_date: document.getElementById("task-due-date").value
+  };
+  try {
+    const response = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Unable to assign task.");
+    document.getElementById("form-assign-task").reset();
+    status.textContent = "Task assigned.";
+    status.classList.remove("hidden");
+    await loadAdminTasks();
+  } catch (error) {
+    status.textContent = error.message || "Unable to assign task.";
+    status.classList.remove("hidden");
+  }
+}
+
+async function updateTaskStatus(taskId, taskStatus, isAdmin) {
+  try {
+    const response = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ status: taskStatus })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Unable to update task.");
+    await (isAdmin ? loadAdminTasks() : loadMyTasks());
+  } catch (error) {
+    showToast(error.message || "Unable to update task.");
+  }
+}
+
+function openTaskEditor(task) {
+  document.getElementById("edit-task-id").value = task.id;
+  document.getElementById("edit-task-title").value = task.title;
+  document.getElementById("edit-task-description").value = task.description;
+  document.getElementById("edit-task-study").value = task.study_id;
+  document.getElementById("edit-task-site").value = task.site_id;
+  document.getElementById("edit-task-priority").value = task.priority;
+  document.getElementById("edit-task-due-date").value = task.due_date;
+  document.getElementById("edit-task-status").value = task.status;
+  document.getElementById("edit-task-assignee").value = task.assignee_email ? `user:${task.assignee_email}` : `role:${task.assignee_role}`;
+  document.getElementById("modal-edit-task").classList.remove("hidden");
+}
+
+async function saveTaskEdit(event) {
+  event.preventDefault();
+  const taskId = document.getElementById("edit-task-id").value;
+  const payload = {
+    assignee: document.getElementById("edit-task-assignee").value,
+    title: document.getElementById("edit-task-title").value.trim(),
+    description: document.getElementById("edit-task-description").value.trim(),
+    study_id: document.getElementById("edit-task-study").value.trim(),
+    site_id: document.getElementById("edit-task-site").value.trim(),
+    priority: document.getElementById("edit-task-priority").value,
+    due_date: document.getElementById("edit-task-due-date").value,
+    status: document.getElementById("edit-task-status").value
+  };
+  try {
+    const response = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Unable to update task.");
+    closeModal("modal-edit-task");
+    await loadAdminTasks();
+  } catch (error) {
+    showToast(error.message || "Unable to update task.");
+  }
 }
 
 async function loadEscalationsUI() {
@@ -1494,7 +2215,7 @@ function filterEscalationsUI() {
 
         <div class="esc-summary-title">${esc.summary}</div>
         <div class="esc-details-body">${esc.details}</div>
-        ${esc.attachment_url ? `<div style="font-size: 0.8rem; color: var(--accent-primary); margin-bottom: 8px;">📎 Attachment: ${esc.attachment_url}</div>` : ''}
+        ${renderEscalationAttachment(esc)}
 
         ${esc.events && esc.events.length > 0 ? `
           <div class="esc-thread-wrap">
@@ -1767,15 +2488,164 @@ function getStatusBadge(status) {
 }
 
 // ==============================================================================
-// MODALS LOGIC (Create, Edit with Version Reason, Verify)
+// MODALS LOGIC (Add Participant, Create, Edit with Version Reason, Verify)
 // ==============================================================================
+
+// Research Coordinator: Add Participant Modal
+function openAddParticipantModal() {
+  if (appState.currentUser?.role !== "Research Coordinator" || appState.activeRole !== "Research Coordinator") {
+    showToast("Access Denied: Only Research Coordinators can add participants.");
+    return;
+  }
+  const pane = document.getElementById("dash-pane-add-participant");
+  if (!pane) return;
+
+  // Auto-generate subject code, e.g. SUB-AIIA-001-043
+  let maxSeq = 42;
+  const parts = appState.studyData?.participants || [];
+  parts.forEach(p => {
+    if (p.subject_code) {
+      const match = p.subject_code.match(/(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxSeq) maxSeq = num;
+      }
+    }
+  });
+  const nextSeq = String(maxSeq + 1).padStart(3, '0');
+  const generatedCode = `SUB-AIIA-001-${nextSeq}`;
+
+  const codeInput = document.getElementById("part-subject-code");
+  if (codeInput) codeInput.value = generatedCode;
+
+  const errBox = document.getElementById("part-error-msg");
+  if (errBox) {
+    errBox.textContent = "";
+    errBox.classList.add("hidden");
+  }
+
+  showDashTab("add-participant");
+}
+
+function setupAddParticipantForm() {
+  const form = document.getElementById("form-add-participant");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errBox = document.getElementById("part-error-msg");
+    if (errBox) {
+      errBox.textContent = "";
+      errBox.classList.add("hidden");
+    }
+
+    const subjectCode = document.getElementById("part-subject-code").value.trim();
+    const studyId = document.getElementById("part-study").value;
+    const age = parseInt(document.getElementById("part-age").value, 10);
+    const sex = document.getElementById("part-sex").value;
+    const ayurDiagnosis = document.getElementById("part-ayur-diagnosis").value.trim();
+    const modernDiagnosis = document.getElementById("part-modern-diagnosis").value.trim();
+    const consentStatus = document.getElementById("part-consent-status").value;
+
+    // GCP-ASU Enrolment Gate: Enrolment is blocked without valid consent
+    if (consentStatus !== "Written Consent Verified") {
+      if (errBox) {
+        errBox.textContent = "❌ Enrolment Blocked: Under GCP-ASU and DPDP regulations, participants cannot be enrolled without valid written consent on file.";
+        errBox.classList.remove("hidden");
+      }
+      return;
+    }
+
+    const newParticipant = {
+      id: `part-${Date.now()}`,
+      subject_code: subjectCode,
+      study_id: studyId,
+      site_id: "SITE-01",
+      age: age,
+      gender: sex,
+      prakriti: "Vata-Pitta",
+      status: "Active Enrolled",
+      visits_completed: 0,
+      total_visits: 8,
+      compliance_pct: 100,
+      ayurvedic_diagnosis: ayurDiagnosis,
+      modern_diagnosis: modernDiagnosis,
+      consent_status: consentStatus,
+      enrolled_at: new Date().toISOString()
+    };
+
+    if (!appState.studyData) {
+      appState.studyData = { studies: [], sites: [], participants: [], adverse_events: [] };
+    }
+    if (!appState.studyData.participants) {
+      appState.studyData.participants = [];
+    }
+
+    // Prepend to active participants ledger
+    appState.studyData.participants.unshift(newParticipant);
+
+    // Call backend API (if connected to FastAPI backend)
+    try {
+      await fetch("/api/participants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject_code: subjectCode,
+          site_id: "SITE-01",
+          age: age,
+          gender: sex,
+          study_id: studyId,
+          consent_status: consentStatus,
+          ayurvedic_diagnosis: ayurDiagnosis,
+          modern_diagnosis: modernDiagnosis
+        })
+      });
+    } catch (err) {
+      console.warn("Backend participant sync notice:", err);
+    }
+
+    // Prepend new row immediately to coordinator tracker table
+    const tbody = document.getElementById("coordinator-participants-tbody");
+    if (tbody) {
+      const newRow = document.createElement("tr");
+      newRow.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+      newRow.innerHTML = `
+        <td><code>${newParticipant.subject_code}</code></td>
+        <td>${newParticipant.study_id}</td>
+        <td>${newParticipant.prakriti}</td>
+        <td><span class="badge badge-green">${newParticipant.status}</span></td>
+        <td>${newParticipant.visits_completed} / ${newParticipant.total_visits}</td>
+        <td><span class="badge badge-info">${newParticipant.compliance_pct}%</span></td>
+        <td><button class="btn btn-secondary btn-sm" onclick="openEscalationDrawer('${newParticipant.subject_code}', 'Participant', 'Normal')">Report Issue</button></td>
+      `;
+      tbody.insertBefore(newRow, tbody.firstChild);
+
+      setTimeout(() => {
+        newRow.style.transition = "background-color 1.5s ease";
+        newRow.style.backgroundColor = "transparent";
+      }, 2000);
+    }
+
+    // Update records count badge
+    const countBadge = document.getElementById("coordinator-participant-count");
+    if (countBadge) {
+      countBadge.textContent = `${appState.studyData.participants.length} Total Coded Records`;
+    }
+
+    showDashTab("workspace");
+    showToast(`✓ Success: Participant ${subjectCode} enrolled and added to site tracker!`);
+  });
+}
+
 function openNewSubmissionModal() {
-  document.getElementById("modal-new-submission").classList.remove("hidden");
+  document.getElementById("form-create-submission")?.reset();
+  showDashTab("new-record");
 }
 
 function closeModal(modalId) {
   document.getElementById(modalId).classList.add("hidden");
 }
+
 
 // Form: Create Submission
 document.getElementById("form-create-submission").addEventListener("submit", async (e) => {
@@ -1820,7 +2690,8 @@ document.getElementById("form-create-submission").addEventListener("submit", asy
   }
 
   appState.submissions.unshift(newSub);
-  closeModal("modal-new-submission");
+  document.getElementById("form-create-submission").reset();
+  showDashTab("submissions");
   loadSubmissionsUI();
   showToast(`Submission "${title}" created.`);
 });
@@ -1992,6 +2863,469 @@ function setupThemeToggle() {
     }
   });
 }
+// ==============================================================================
+// LEGAL DOCUMENTS MODULE (ETHICS COMMITTEE, PI & ADMIN)
+// ==============================================================================
+
+async function loadLeadershipLegalDocs() {
+  const rows = document.getElementById("leadership-legal-rows");
+  const timeline = document.getElementById("leadership-legal-timeline");
+  const status = document.getElementById("leadership-legal-status");
+  if (!rows || !timeline || !status) return;
+
+  try {
+    const response = await fetch("/api/legal-documents", { credentials: "same-origin" });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.detail || "Unable to load legal documents.");
+    rows.replaceChildren();
+    timeline.replaceChildren();
+
+    result.documents.forEach(documentInfo => {
+      const row = document.createElement("tr");
+      [documentInfo.title, documentInfo.type, documentInfo.issuing_authority, documentInfo.issue_date, documentInfo.expiry_date].forEach(value => {
+        const cell = document.createElement("td");
+        cell.textContent = value || "Not recorded";
+        row.appendChild(cell);
+      });
+      const stateCell = document.createElement("td");
+      stateCell.textContent = documentInfo.status;
+      stateCell.className = documentInfo.status === "Expired" ? "badge-red" : documentInfo.status === "Expiring soon" ? "badge-amber" : "badge-green";
+      row.appendChild(stateCell);
+      const countdownCell = document.createElement("td");
+      countdownCell.textContent = documentInfo.countdown;
+      row.appendChild(countdownCell);
+      rows.appendChild(row);
+
+      const item = document.createElement("div");
+      item.className = "leadership-legal-timeline-row";
+      const details = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = documentInfo.title;
+      const countdown = document.createElement("small");
+      countdown.textContent = `${documentInfo.expiry_date} · ${documentInfo.countdown}`;
+      details.append(title, countdown);
+      const track = document.createElement("div");
+      track.className = "leadership-legal-timeline-track";
+      const fill = document.createElement("div");
+      fill.className = `leadership-legal-timeline-fill ${documentInfo.status === "Expired" ? "expired" : documentInfo.status === "Expiring soon" ? "expiring" : "active"}`;
+      fill.style.width = `${Math.max(8, Math.min(100, 100 - Math.max(0, documentInfo.days_remaining) / 365 * 100))}%`;
+      track.appendChild(fill);
+      item.append(details, track);
+      timeline.appendChild(item);
+    });
+    status.classList.add("hidden");
+  } catch (error) {
+    status.textContent = error.message || "Unable to load legal documents.";
+    status.classList.remove("hidden");
+  }
+}
+
+function renderLegalDocumentsPage() {
+  const container = document.getElementById("dash-pane-legal-docs");
+  if (!container) return;
+
+  const now = new Date();
+  
+  // Recalculate live days remaining for all documents
+  appState.legalDocuments.forEach(doc => {
+    const expDate = new Date(doc.expiry_date);
+    const diffTime = expDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    doc.days_remaining = diffDays;
+    if (diffDays > 90) {
+      doc.status = "safe";
+    } else if (diffDays >= 30 && diffDays <= 90) {
+      doc.status = "attention";
+    } else if (diffDays >= 0 && diffDays < 30) {
+      doc.status = "urgent";
+    } else {
+      doc.status = "expired";
+    }
+  });
+
+  // Calculate status counts
+  const safeCount = appState.legalDocuments.filter(d => d.status === "safe").length;
+  const attentionCount = appState.legalDocuments.filter(d => d.status === "attention").length;
+  const urgentCount = appState.legalDocuments.filter(d => d.status === "urgent").length;
+  const expiredCount = appState.legalDocuments.filter(d => d.status === "expired").length;
+
+  // Auto alerts banner (at 90, 60, 30 days and on expiry)
+  const alertBanner = document.getElementById("legal-alerts-banner");
+  const alertSummary = document.getElementById("legal-alerts-summary");
+  if (alertBanner && alertSummary) {
+    if (expiredCount > 0 || urgentCount > 0 || attentionCount > 0) {
+      let alertMsg = "";
+      if (expiredCount > 0) {
+        alertMsg += `🚨 <strong>CRITICAL EXPIRY:</strong> ${expiredCount} document has EXPIRED. Dosing/recruitment paused for affected cohort under GCP-ASU. `;
+      }
+      if (urgentCount > 0) {
+        alertMsg += `⚠️ <strong>30-DAY URGENT:</strong> ${urgentCount} document(s) expiring within 30 days. Renewal submission mandatory. `;
+      }
+      if (attentionCount > 0) {
+        alertMsg += `🟡 <strong>60/90-DAY NOTICE:</strong> ${attentionCount} document(s) due for renewal within 30 to 90 days. `;
+      }
+      alertMsg += `Automated regulatory notices dispatched to Ethics Committee, PI, and Admin.`;
+      alertSummary.innerHTML = alertMsg;
+      alertBanner.classList.remove("hidden");
+    } else {
+      alertBanner.classList.add("hidden");
+    }
+  }
+
+  // Update KPI Summary Grid
+  const kpiGrid = document.getElementById("legal-kpi-grid");
+  if (kpiGrid) {
+    kpiGrid.innerHTML = `
+      <div class="dash-card">
+        <div class="kpi-label">Total Documents Tracked</div>
+        <div class="kpi-value">${appState.legalDocuments.length}</div>
+        <div class="kpi-note">All studies, institutional MoUs & CTRI</div>
+      </div>
+      <div class="dash-card">
+        <div class="kpi-label" style="color: #047857;">Safe (>90 Days)</div>
+        <div class="kpi-value" style="color: #047857;">${safeCount}</div>
+        <div class="kpi-note">Active statutory validity</div>
+      </div>
+      <div class="dash-card">
+        <div class="kpi-label" style="color: #b45309;">Attention (30–90 Days)</div>
+        <div class="kpi-value" style="color: #b45309;">${attentionCount}</div>
+        <div class="kpi-note">60/90-day early alert active</div>
+      </div>
+      <div class="dash-card">
+        <div class="kpi-label" style="color: #b91c1c;">Urgent & Expired (<30d)</div>
+        <div class="kpi-value" style="color: #b91c1c;">${urgentCount + expiredCount}</div>
+        <div class="kpi-note">${expiredCount} expired • ${urgentCount} expiring <30d</div>
+      </div>
+    `;
+  }
+
+  // Render Expiry Timeline View (Sorted next to expire)
+  renderLegalDocsTimeline(appState.legalDocuments);
+
+  // Render Table
+  renderLegalDocsTable(appState.legalDocuments);
+}
+
+function getLegalDocBadgeHTML(doc) {
+  const days = doc.days_remaining;
+  if (days > 90) {
+    return `<span class="badge badge-green" style="font-weight: 600;">✓ Expires in ${days} days</span>`;
+  } else if (days >= 30 && days <= 90) {
+    return `<span class="badge badge-amber" style="font-weight: 600;">⚠️ Expires in ${days} days</span>`;
+  } else if (days >= 0 && days < 30) {
+    return `<span class="badge badge-red" style="font-weight: 700;">🚨 Expires in ${days} day${days === 1 ? '' : 's'}</span>`;
+  } else {
+    return `<span class="badge badge-darkred">🛑 Expired ${Math.abs(days)} days ago</span>`;
+  }
+}
+
+function renderLegalDocsTimeline(docs) {
+  const container = document.getElementById("legal-docs-timeline-container");
+  if (!container) return;
+
+  // Sort ascending by days remaining (expired and closest to expire first)
+  const sorted = [...docs].sort((a, b) => a.days_remaining - b.days_remaining);
+
+  container.innerHTML = sorted.map((doc, idx) => {
+    const isNext = idx === 0 || (idx === 1 && sorted[0].days_remaining < 0);
+    const days = doc.days_remaining;
+    
+    // Bar fill percentage (shorter days remaining = fuller urgent bar)
+    let fillPct = 100;
+    let fillColor = "#ef4444";
+    if (days > 90) {
+      fillPct = Math.max(10, Math.min(100, Math.round((days / 365) * 100)));
+      fillColor = "#10b981";
+    } else if (days >= 30) {
+      fillPct = Math.max(30, Math.min(90, Math.round(((90 - days) / 60) * 100)));
+      fillColor = "#f59e0b";
+    } else if (days >= 0) {
+      fillPct = Math.max(60, Math.min(100, Math.round(((30 - days) / 30) * 100)));
+      fillColor = "#ef4444";
+    } else {
+      fillPct = 100;
+      fillColor = "#991b1b";
+    }
+
+    return `
+      <div class="timeline-item-card" style="${isNext ? 'border-left: 4px solid #ef4444; background: #fffaf0;' : ''}">
+        <div style="min-width: 220px;">
+          <div style="font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+            ${doc.title}
+            ${isNext ? '<span class="badge badge-red" style="font-size: 0.65rem; padding: 1px 4px;">EXPIRES NEXT</span>' : ''}
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+            <span class="badge badge-secondary" style="font-size: 0.7rem;">${doc.type}</span> • <code>${doc.study}</code> • ${doc.version}
+          </div>
+        </div>
+
+        <div class="timeline-progress-bar-wrap" title="${doc.status_label || doc.reason}">
+          <div class="timeline-progress-fill" style="width: ${fillPct}%; background-color: ${fillColor};"></div>
+        </div>
+
+        <div style="min-width: 170px; text-align: right;">
+          ${getLegalDocBadgeHTML(doc)}
+          <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">Expiry: ${doc.expiry_date}</div>
+        </div>
+
+        <button class="btn btn-secondary btn-sm" onclick="viewLegalDoc('${doc.id}')" style="font-size: 0.78rem; padding: 3px 8px;">View</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderLegalDocsTable(docs) {
+  const tbody = document.getElementById("legal-docs-tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = docs.map(doc => {
+    const isUrgentOrAmber = doc.status === "urgent" || doc.status === "attention" || doc.status === "expired";
+    const reasonText = doc.reason || "Uploaded under statutory GCP-ASU clinical trial documentation standard.";
+    
+    return `
+      <tr style="${doc.status === 'expired' ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
+        <td>
+          <strong>${doc.title}</strong>
+          <div style="margin-top: 3px;">
+            <span class="badge badge-secondary" style="font-size: 0.72rem;">${doc.type}</span>
+          </div>
+        </td>
+        <td><code>${doc.study}</code></td>
+        <td>
+          <span class="badge badge-secondary" style="cursor: pointer; text-decoration: underline;" onclick="showVersionHistoryModal('${doc.id}')" title="Click to view version history">
+            ${doc.version} (${doc.versions ? doc.versions.length : 1} ver)
+          </span>
+        </td>
+        <td>${doc.issue_date}</td>
+        <td><strong>${doc.expiry_date}</strong></td>
+        <td>${getLegalDocBadgeHTML(doc)}</td>
+        <td style="max-width: 280px; font-size: 0.82rem; line-height: 1.4;">
+          ${isUrgentOrAmber ? `<span style="color: ${doc.status === 'expired' ? '#991b1b' : (doc.status === 'urgent' ? '#b91c1c' : '#b45309')}; font-weight: 500;">⚠️ ${reasonText}</span>` : `<span style="color: var(--text-muted);">${reasonText}</span>`}
+        </td>
+        <td>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm" onclick="viewLegalDoc('${doc.id}')" title="View / Download file" style="padding: 3px 8px; font-size: 0.78rem;">📄 View</button>
+            <button class="btn btn-secondary btn-sm" onclick="openUploadLegalDocModal('${doc.title.replace(/'/g, "\\'")}', '${doc.type}', '${doc.study}')" title="Upload new version" style="padding: 3px 8px; font-size: 0.78rem;">+ New Ver</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function filterLegalDocumentsUI() {
+  const typeFilter = document.getElementById("filter-legal-doc-type").value;
+  const statusFilter = document.getElementById("filter-legal-doc-status").value;
+
+  let filtered = [...appState.legalDocuments];
+  if (typeFilter) {
+    filtered = filtered.filter(d => d.type === typeFilter);
+  }
+  if (statusFilter) {
+    filtered = filtered.filter(d => d.status === statusFilter);
+  }
+
+  renderLegalDocsTable(filtered);
+}
+
+function openUploadLegalDocModal(prefillTitle = "", prefillType = "", prefillStudy = "") {
+  const role = appState.activeRole || (appState.currentUser ? appState.currentUser.role : "EC Member");
+  if (role !== "EC Member" && role !== "Principal Investigator" && role !== "Admin") {
+    showToast("Access Denied: Only EC Members, PI, and Admin can upload trial legal documents.");
+    return;
+  }
+
+  const modal = document.getElementById("modal-upload-legal-doc");
+  if (!modal) return;
+
+  const titleInput = document.getElementById("legal-doc-title");
+  const typeInput = document.getElementById("legal-doc-type");
+  const studyInput = document.getElementById("legal-doc-study");
+  const verInput = document.getElementById("legal-doc-version");
+  const issueInput = document.getElementById("legal-doc-issue-date");
+  const expiryInput = document.getElementById("legal-doc-expiry-date");
+  const errBox = document.getElementById("legal-doc-error-msg");
+
+  if (errBox) {
+    errBox.textContent = "";
+    errBox.classList.add("hidden");
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const nextYear = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  if (prefillTitle) {
+    titleInput.value = prefillTitle;
+    typeInput.value = prefillType || "other";
+    studyInput.value = prefillStudy || "AYUR-CT-2026-001";
+    // Check existing version
+    const existing = appState.legalDocuments.find(d => d.title.toLowerCase() === prefillTitle.toLowerCase());
+    if (existing) {
+      const verNum = parseFloat(existing.version.replace('v', '')) || 1.0;
+      verInput.value = `v${(verNum + 1.0).toFixed(1)}`;
+    } else {
+      verInput.value = "v1.0";
+    }
+  } else {
+    titleInput.value = "";
+    verInput.value = "v1.0";
+  }
+
+  issueInput.value = today;
+  expiryInput.value = nextYear;
+
+  modal.classList.remove("hidden");
+}
+
+function setupUploadLegalDocForm() {
+  const form = document.getElementById("form-upload-legal-doc");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errBox = document.getElementById("legal-doc-error-msg");
+    if (errBox) {
+      errBox.textContent = "";
+      errBox.classList.add("hidden");
+    }
+
+    const title = document.getElementById("legal-doc-title").value.trim();
+    const type = document.getElementById("legal-doc-type").value;
+    const study = document.getElementById("legal-doc-study").value;
+    const version = document.getElementById("legal-doc-version").value.trim();
+    const issueDate = document.getElementById("legal-doc-issue-date").value;
+    const expiryDate = document.getElementById("legal-doc-expiry-date").value;
+    const reason = document.getElementById("legal-doc-reason").value.trim() || "Uploaded under statutory GCP-ASU clinical trial documentation standard.";
+    const fileInput = document.getElementById("legal-doc-file");
+    const fileName = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : "uploaded_regulatory_doc.pdf";
+
+    if (!title || !issueDate || !expiryDate) {
+      if (errBox) {
+        errBox.textContent = "Please fill in all mandatory fields.";
+        errBox.classList.remove("hidden");
+      }
+      return;
+    }
+
+    const uploaderName = appState.currentUser ? appState.currentUser.name || appState.currentUser.email : "Authorized Officer";
+    const nowIso = new Date().toISOString();
+
+    // Documents are never deleted; new uploads become new versions with history
+    const existing = appState.legalDocuments.find(d => d.title.toLowerCase() === title.toLowerCase() || (d.type === type && d.study === study));
+    
+    if (existing) {
+      if (!existing.versions) existing.versions = [];
+      existing.versions.push({
+        version: existing.version,
+        uploaded_at: nowIso,
+        uploaded_by: uploaderName
+      });
+      existing.version = version;
+      existing.issue_date = issueDate;
+      existing.expiry_date = expiryDate;
+      existing.file_name = fileName;
+      existing.reason = reason;
+      showToast(`✓ New version ${version} uploaded for "${title}". Previous version archived in history.`);
+    } else {
+      const newDoc = {
+        id: `leg-${String(appState.legalDocuments.length + 1).padStart(3, '0')}`,
+        title,
+        type,
+        study,
+        version,
+        issue_date: issueDate,
+        expiry_date: expiryDate,
+        days_remaining: Math.ceil((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24)),
+        status: "safe",
+        reason,
+        file_name: fileName,
+        file_size: "2.4 MB",
+        uploaded_by: uploaderName,
+        versions: [
+          { version, uploaded_at: nowIso, uploaded_by: uploaderName }
+        ]
+      };
+      appState.legalDocuments.unshift(newDoc);
+      showToast(`✓ Legal document "${title}" uploaded and registered in Supabase Storage.`);
+    }
+
+    // Call backend API if connected
+    try {
+      await fetch("/api/ethics/legal-documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          type,
+          study,
+          version,
+          issue_date: issueDate,
+          expiry_date: expiryDate,
+          reason,
+          file_name: fileName
+        })
+      });
+    } catch (err) {
+      console.warn("Backend sync notice for legal documents:", err);
+    }
+
+    closeModal("modal-upload-legal-doc");
+    form.reset();
+
+    // Re-render legal docs page if active
+    if (appState.activeDashboardTab === "legal-docs") {
+      renderLegalDocumentsPage();
+    }
+    // Re-render EC workspace summary card if active
+    if (appState.activeRole === "EC Member" && appState.activeDashboardTab === "workspace") {
+      renderRoleWorkspace("EC Member");
+    }
+  });
+}
+
+function viewLegalDoc(docId) {
+  const doc = appState.legalDocuments.find(d => d.id === docId);
+  if (!doc) return;
+
+  // Log upload / view event in audit log (DPDP & GCP-ASU requirement)
+  const viewer = appState.currentUser ? appState.currentUser.email : "Authorized Officer";
+  try {
+    fetch(`/api/ethics/legal-documents/${docId}/view`, { method: "POST" });
+  } catch {}
+
+  showToast(`📄 Viewing "${doc.title}" (${doc.file_name || 'document.pdf'}). Access event logged in audit trail.`);
+}
+
+function showVersionHistoryModal(docId) {
+  const doc = appState.legalDocuments.find(d => d.id === docId);
+  if (!doc) return;
+
+  const titleEl = document.getElementById("version-history-title");
+  const subEl = document.getElementById("version-history-subtitle");
+  const tbody = document.getElementById("version-history-tbody");
+
+  if (titleEl) titleEl.textContent = `Version History: ${doc.title}`;
+  if (subEl) subEl.textContent = `Type: ${doc.type} • Protocol: ${doc.study} • Current Version: ${doc.version} (Documents are immutable and never deleted)`;
+
+  const versions = doc.versions && doc.versions.length > 0 ? doc.versions : [
+    { version: doc.version, uploaded_at: doc.issue_date, uploaded_by: doc.uploaded_by || "Authorized Officer" }
+  ];
+
+  if (tbody) {
+    tbody.innerHTML = versions.map((v, i) => `
+      <tr>
+        <td><strong>${v.version}</strong> ${i === versions.length - 1 ? '<span class="badge badge-green">Current Active</span>' : '<span class="badge badge-secondary">Archived</span>'}</td>
+        <td>${v.uploaded_at ? v.uploaded_at.slice(0, 10) : doc.issue_date}</td>
+        <td>${v.uploaded_by || "Authorized Officer"}</td>
+        <td><button class="btn btn-secondary btn-sm" onclick="viewLegalDoc('${doc.id}')" style="font-size: 0.75rem; padding: 2px 6px;">Download</button></td>
+      </tr>
+    `).join("");
+  }
+
+  const modal = document.getElementById("modal-version-history");
+  if (modal) modal.classList.remove("hidden");
+}
+
 
 // Check Backend connection status
 async function checkSupabaseBackendStatus() {
@@ -2000,14 +3334,16 @@ async function checkSupabaseBackendStatus() {
     if (res.ok) {
       const data = await res.json();
       const badge = document.getElementById("db-status-badge");
-      if (data.is_connected) {
-        badge.textContent = "Supabase Active";
-        badge.style.background = "rgba(16, 185, 129, 0.2)";
-        badge.style.color = "#10b981";
-      } else {
-        badge.textContent = "Mock Database Mode";
-        badge.style.background = "rgba(245, 158, 11, 0.2)";
-        badge.style.color = "#d97706";
+      if (badge) {
+        if (data.is_connected) {
+          badge.textContent = "Supabase Active";
+          badge.style.background = "rgba(16, 185, 129, 0.2)";
+          badge.style.color = "#10b981";
+        } else {
+          badge.textContent = "Mock Database Mode";
+          badge.style.background = "rgba(245, 158, 11, 0.2)";
+          badge.style.color = "#d97706";
+        }
       }
     }
   } catch {

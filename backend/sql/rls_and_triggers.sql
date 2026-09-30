@@ -68,17 +68,9 @@ ALTER TABLE dispensing_logs ENABLE ROW LEVEL SECURITY;
 -- - Doctor/Investigator, Monitor, Auditor can view subject records.
 -- ----------------------------------------------------------------------------
 
--- Admin clinical data block
-CREATE POLICY admin_block_clinical_data ON participants
-FOR ALL
-TO ayur_app
-USING (
-    current_setting('app.current_user_role', true) != 'Admin'
-);
-
--- Site Tenancy policy for Research Coordinator
-CREATE POLICY coordinator_site_tenancy ON participants
-FOR ALL
+-- Participants View Policy: PI and Admin can view participants (PI and Coordinator see unmasked PII, Admin/Monitor/Auditor see masked)
+CREATE POLICY participants_select_policy ON participants
+FOR SELECT
 TO ayur_app
 USING (
     CASE 
@@ -86,22 +78,17 @@ USING (
         THEN site_id = current_setting('app.current_site_id', true)
         ELSE true
     END
-)
-WITH CHECK (
-    CASE 
-        WHEN current_setting('app.current_user_role', true) = 'Research Coordinator' 
-        THEN site_id = current_setting('app.current_site_id', true)
-        ELSE true
-    END
 );
 
--- Read-only constraint for Monitor and Auditor roles
-CREATE POLICY readonly_monitor_auditor ON participants
+-- Coordinator-Only Insert Policy: Only Research Coordinator can insert participants at their own site
+CREATE POLICY coordinator_only_insert_participants ON participants
 FOR INSERT
 TO ayur_app
 WITH CHECK (
-    current_setting('app.current_user_role', true) NOT IN ('Monitor', 'Auditor / Regulator')
+    current_setting('app.current_user_role', true) = 'Research Coordinator'
+    AND site_id = current_setting('app.current_site_id', true)
 );
+
 
 -- ----------------------------------------------------------------------------
 -- PARTICIPANT_PII TABLE RLS (DIRECT PERSONAL IDENTIFIABLE DATA)

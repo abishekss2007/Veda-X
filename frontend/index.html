@@ -17,10 +17,9 @@
     <div class="top-bar-container">
       <div class="sync-status">
         <span class="pulse-dot"></span>
-        <span><strong>AIIA Trial Platform:</strong> Connected to Supabase • Clocks: <code id="ntp-status-clock">time.nic.in (NTP)</code> • Mumbai Region (ap-south-1)</span>
+        <span><strong>AIIA Trial Platform:</strong> Clocks: <code id="ntp-status-clock">time.nic.in (NTP)</code> • Mumbai Region (ap-south-1)</span>
       </div>
       <div class="top-bar-actions">
-        <span class="db-status-badge" id="db-status-badge">Supabase Connected</span>
         <button id="theme-toggle-btn" class="btn-text" aria-label="Toggle Theme">🌙 Dark</button>
       </div>
     </div>
@@ -29,20 +28,12 @@
   <!-- Global Application Header -->
   <header class="app-header" id="global-header">
     <div class="header-container">
-      <a href="#landing" class="logo-group" id="logo-link">
-        <div class="logo-emblem">🌿</div>
+      <a href="#landing" class="logo-group" id="logo-link" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+        <img src="/aiia-logo.jpg" alt="All India Institute of Ayurveda" style="height: 44px; width: 44px; object-fit: contain; border-radius: 50%;" onerror="this.onerror=null; this.outerHTML='<div class=\'logo-emblem\'>AIIA</div>';">
         <div>
-          <span class="logo-title">AyurCTMS</span>
-          <span class="logo-sub">All India Institute of Ayurveda</span>
+          <span class="logo-title" style="display: block; font-weight: bold; font-size: 1.2rem;">AyurCTMS</span>
         </div>
       </a>
-
-      <!-- Guest Navigation (Shown when logged out) -->
-      <div class="nav-guest" id="nav-guest">
-        <a href="#landing" class="nav-link">Home</a>
-        <a href="#register" class="nav-link">Register</a>
-        <a href="#login" class="btn btn-primary" id="btn-nav-signin">Sign in</a>
-      </div>
 
       <!-- Authenticated User Top Bar (Shown when logged in) -->
       <div class="nav-auth hidden" id="nav-auth">
@@ -70,15 +61,10 @@
   <main id="view-landing" class="view-container active">
     <!-- Hero Section -->
     <section class="hero-section">
-      <div class="hero-badge">Ministry of AYUSH • GCP-ASU & DPDP 2025 Compliant</div>
       <h1 class="hero-title">One secure place to manage Ayurveda clinical trials.</h1>
       <p class="hero-subtitle">
-        Purpose-built for investigators, coordinators, ethics committees, and regulators to manage classical protocol regimens, patient consent, and tamper-proof trial data.
+        Clinical trial management system for Ayurvedic research protocols, ethical compliance, and GCP-ASU standards.
       </p>
-      <div class="hero-cta-group">
-        <a href="#login" class="btn btn-primary btn-lg">Sign in to your dashboard</a>
-        <a href="#register" class="btn btn-secondary btn-lg">Register new account</a>
-      </div>
     </section>
 
     <!-- Role Selection Section (9 Cards) -->
@@ -293,11 +279,13 @@
         <div id="login-step-1">
           <div class="auth-card-header">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span class="auth-step-pill">Step 1 of 2</span>
               <!-- Demo mode badge (controlled by NEXT_PUBLIC_DEMO_MODE) -->
               <span id="login-demo-badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(16, 185, 129, 0.3);">⚡ Demo mode</span>
             </div>
-            <h2>Sign in to AyurCTMS</h2>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <img src="/aiia-logo.jpg" alt="AIIA" style="height: 32px; width: 32px; object-fit: contain; border-radius: 50%;" onerror="this.onerror=null; this.style.display='none';">
+              <h2 style="margin: 0;">Sign in to AyurCTMS</h2>
+            </div>
             <p>Select your authorized role and enter your institutional credentials.</p>
           </div>
 
@@ -334,7 +322,7 @@
                 <button type="button" id="btn-fill-demo-details" class="btn-text" style="font-size: 0.78rem; color: var(--primary, #059669); padding: 0; text-decoration: underline; cursor: pointer; font-weight: 500;">Fill demo details</button>
               </div>
               <ul style="margin: 0; padding-left: 18px; line-height: 1.5; color: var(--text-muted, #64748b);">
-                <li>Use any email</li>
+                <li>Use the configured demo account</li>
                 <li>Password: <code>Demo@2026</code></li>
                 <li>Verification code: <code>123456</code></li>
               </ul>
@@ -342,12 +330,9 @@
 
             <div id="login-error-msg" class="error-msg-box hidden"></div>
 
-            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-proceed-step1">Continue to 2FA Verification &rarr;</button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-proceed-step1">Sign in</button>
+            <button type="button" class="btn-text hidden" id="btn-cancel-role-switch" style="margin-top: 10px; width: 100%; text-align: center; font-size: 0.88rem; color: var(--text-muted); cursor: pointer;">✕ Cancel role switch &larr; Return to dashboard</button>
           </form>
-
-          <div class="auth-footer-link">
-            Need an account? <a href="#register">Register here</a>
-          </div>
         </div>
 
         <!-- Step 2: 2FA Verification (OTP or Face/Passkey) -->
@@ -385,6 +370,7 @@
               <button type="button" class="btn-text" id="btn-resend-otp">Resend code (30s)</button>
               <button type="button" class="btn-text" id="btn-back-step1">&larr; Back to login</button>
             </div>
+            <button type="button" class="btn-text hidden" id="btn-cancel-role-switch-step2" style="margin-top: 8px; width: 100%; text-align: center; font-size: 0.88rem; color: var(--text-muted); cursor: pointer;">✕ Cancel role switch &larr; Return to dashboard</button>
           </form>
 
           <!-- Passkey Demo Pane -->
@@ -407,8 +393,8 @@
     
     <!-- Left Navigation -->
     <aside class="dash-sidebar" id="dash-sidebar">
-      <div class="sidebar-brand">
-        <span class="brand-symbol">🌿</span>
+      <div class="sidebar-brand" style="display: flex; align-items: center; gap: 8px;">
+        <img src="/aiia-logo.jpg" alt="AIIA" style="height: 32px; width: 32px; object-fit: contain; border-radius: 50%;" onerror="this.onerror=null; this.outerHTML='<span class=\'brand-symbol\'>AIIA</span>';">
         <span class="brand-text">AyurCTMS</span>
       </div>
 
@@ -423,8 +409,27 @@
           <span class="item-icon">⚡</span> <span id="escalations-nav-label">Incoming Reports</span>
           <span class="badge badge-red unread-badge hidden" id="esc-nav-badge" style="margin-left: auto; font-size: 0.7rem; padding: 1px 6px;">0</span>
         </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-new-submission" onclick="event.preventDefault(); showDashTab('new-submission');">
+          <span class="item-icon">📝</span> New Submission
+        </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-my-tasks" onclick="event.preventDefault(); showDashTab('my-tasks');">
+          <span class="item-icon">✓</span> My Tasks
+        </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-assign-jobs" onclick="event.preventDefault(); showDashTab('assign-jobs');">
+          <span class="item-icon">📋</span> Assign Jobs
+        </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-assigned-by-me" onclick="event.preventDefault(); showDashTab('assigned-by-me');">
+          <span class="item-icon">📤</span> Assigned by Me
+        </a>
         <a href="#" class="sidebar-item" id="nav-item-submissions" onclick="event.preventDefault(); showDashTab('submissions');">
           <span class="item-icon">📁</span> My Submissions
+        </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-legal-docs" onclick="event.preventDefault(); showDashTab('legal-docs');">
+          <span class="item-icon">⚖️</span> <span>Legal Documents</span>
+          <span class="badge badge-amber hidden" id="legal-docs-nav-badge" style="margin-left: auto; font-size: 0.7rem; padding: 1px 6px;">3 Alerts</span>
+        </a>
+        <a href="#" class="sidebar-item hidden" id="nav-item-leadership-legal" onclick="event.preventDefault(); showDashTab('leadership-legal');">
+          <span class="item-icon">⚖️</span> Legal
         </a>
         <a href="#" class="sidebar-item hidden" id="nav-item-team" onclick="event.preventDefault(); showDashTab('team');">
           <span class="item-icon">👥</span> Team Activity (All)
@@ -438,7 +443,6 @@
         <div class="role-caption">Logged in as:</div>
         <div class="user-role-label" id="side-user-role">Research Coordinator</div>
         <div class="user-email-label" id="side-user-email">coordinator@ayurctms.demo</div>
-        <button id="btn-sidebar-signout" class="btn btn-outline-danger btn-block" style="margin-top: 10px;">Sign out</button>
       </div>
     </aside>
 
@@ -474,12 +478,7 @@
             <span class="bell-badge hidden" id="bell-badge-count">0</span>
           </button>
 
-          <!-- Report to Superior Escalation Button -->
-          <button id="btn-open-escalation" class="btn btn-warning" onclick="openEscalationDrawer()" style="background: #f59e0b; color: #fff; font-weight: 600; border: none;">
-            ⚡ Report to PI / Admin
-          </button>
-
-          <button id="btn-new-submission" class="btn btn-primary" onclick="openNewSubmissionModal()">+ New Submission</button>
+          <button id="btn-new-submission" class="btn btn-primary" onclick="openNewSubmissionModal()">+ New Record</button>
         </div>
       </header>
 
@@ -558,9 +557,13 @@
               <h3 id="esc-pane-title">Incoming Escalation Reports</h3>
               <p id="esc-pane-subtitle">Real-time alerts submitted by trial team members requiring PI / Admin action.</p>
             </div>
-            <div class="pane-actions" style="display: flex; gap: 8px;">
-              <button class="btn btn-warning" onclick="openEscalationDrawer()">+ Submit New Escalation</button>
-              <button class="btn btn-secondary" onclick="loadEscalationsUI()">🔄 Refresh Realtime</button>
+            <div class="pane-actions report-pane-actions" style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary report-pane-action" onclick="loadEscalationsUI()">
+                <span class="report-pane-action-icon" aria-hidden="true">↻</span> Refresh Realtime
+              </button>
+              <button type="button" class="btn btn-secondary report-pane-action" onclick="showDashTab('overview')">
+                <span class="report-pane-action-icon" aria-hidden="true">←</span> Back to dashboard
+              </button>
             </div>
           </div>
 
@@ -604,6 +607,320 @@
           <!-- Escalations Feed Container -->
           <div class="escalations-list" id="escalations-cards-container" style="margin-top: 18px;">
             <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <div id="dash-pane-new-submission" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>New Submission</h3>
+              <p>Send a trial report to the Principal Investigator and Admin.</p>
+            </div>
+            <div class="pane-actions">
+              <button type="button" class="btn btn-secondary" onclick="showDashTab('overview')">Back to dashboard</button>
+            </div>
+          </div>
+          <form id="form-new-escalation" class="auth-form" onsubmit="submitNewSubmission(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="new-submission-category">Category <span class="req">*</span></label>
+                <select id="new-submission-category" class="form-control" required>
+                  <option value="Safety">Safety</option>
+                  <option value="Participant">Participant</option>
+                  <option value="Consent">Consent</option>
+                  <option value="Protocol deviation">Protocol deviation</option>
+                  <option value="Data issue">Data issue</option>
+                  <option value="Site issue">Site issue</option>
+                  <option value="Ethics">Ethics</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="new-submission-urgency">Urgency <span class="req">*</span></label>
+                <select id="new-submission-urgency" class="form-control" required>
+                  <option value="Normal">Normal</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="new-submission-study">Study</label>
+                <input id="new-submission-study" class="form-control" value="AYUR-CT-2026-001" readonly>
+              </div>
+              <div class="form-group">
+                <label for="new-submission-site">Site</label>
+                <input id="new-submission-site" class="form-control" readonly>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="new-submission-subject">Participant subject code <small>(Optional; do not enter a name)</small></label>
+              <select id="new-submission-subject" class="form-control">
+                <option value="">No specific participant</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="new-submission-summary">Summary <span class="req">*</span></label>
+              <input id="new-submission-summary" class="form-control" maxlength="120" required oninput="updateNewSubmissionCharCount(this)">
+              <small id="new-submission-char-count">0 / 120</small>
+            </div>
+            <div class="form-group">
+              <label for="new-submission-details">Details <span class="req">*</span></label>
+              <textarea id="new-submission-details" class="form-control" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="new-submission-attachment">Attachment (optional)</label>
+              <input id="new-submission-attachment" type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.docx">
+            </div>
+            <p id="new-submission-status" class="hidden" role="status" aria-live="polite"></p>
+            <div class="pane-actions">
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="dash-pane-add-participant" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>Add Clinical Trial Participant</h3>
+              <p>Enrol a coded participant after verifying written consent.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="showDashTab('workspace')">Back to dashboard</button>
+          </div>
+          <form id="form-add-participant" class="auth-form full-page-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="part-subject-code">Subject Code (Auto-Generated) <span class="req">*</span></label>
+                <input type="text" id="part-subject-code" class="form-control" readonly required>
+              </div>
+              <div class="form-group">
+                <label for="part-study">Clinical Study <span class="req">*</span></label>
+                <select id="part-study" class="form-control" required>
+                  <option value="AYUR-CT-2026-001">AYUR-CT-2026-001 (Smriti-Bhramsha)</option>
+                  <option value="AYUR-CT-2026-002">AYUR-CT-2026-002 (Amavata Protocol)</option>
+                  <option value="AYUR-CT-2026-003">AYUR-CT-2026-003 (Madhumeha Regimen)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="part-age">Age (Years) <span class="req">*</span></label>
+                <input type="number" id="part-age" class="form-control" min="1" max="120" value="48" required>
+              </div>
+              <div class="form-group">
+                <label for="part-sex">Sex <span class="req">*</span></label>
+                <select id="part-sex" class="form-control" required>
+                  <option value="Female">Female</option>
+                  <option value="Male" selected>Male</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="part-ayur-diagnosis">Ayurvedic Diagnosis (Nidana / Dosha) <span class="req">*</span></label>
+              <input type="text" id="part-ayur-diagnosis" class="form-control" value="Smriti-Bhramsha with Vata-Pitta Dushti" required>
+            </div>
+            <div class="form-group">
+              <label for="part-modern-diagnosis">Modern Clinical Diagnosis (ICD-11) <span class="req">*</span></label>
+              <input type="text" id="part-modern-diagnosis" class="form-control" value="Mild Cognitive Impairment (ICD-11: 6D71)" required>
+            </div>
+            <div class="form-group highlight-box">
+              <label for="part-consent-status">Informed Consent Status (GCP-ASU Mandatory Gate) <span class="req">*</span></label>
+              <select id="part-consent-status" class="form-control" required>
+                <option value="Written Consent Verified" selected>Written Consent Verified</option>
+                <option value="Pending Re-consent">Pending Re-consent (Enrolment Blocked)</option>
+                <option value="Not Consented">Not Consented (Enrolment Blocked)</option>
+              </select>
+              <small class="hint-text">Enrolment is blocked unless valid consent is verified.</small>
+            </div>
+            <div id="part-error-msg" class="error-msg-box hidden" role="alert"></div>
+            <div class="pane-actions">
+              <button type="button" class="btn btn-secondary" onclick="showDashTab('workspace')">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-add-participant">Enrol & Add Participant</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="dash-pane-new-record" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>Create Trial Record</h3>
+              <p>Create a submission for the current study.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="showDashTab('overview')">Back to dashboard</button>
+          </div>
+          <form id="form-create-submission" class="auth-form full-page-form">
+            <div class="form-group">
+              <label for="sub-title">Submission Title <span class="req">*</span></label>
+              <input type="text" id="sub-title" class="form-control" placeholder="e.g. Subject Visit 01 Case Report Form" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sub-type">Type <span class="req">*</span></label>
+                <select id="sub-type" class="form-control" required>
+                  <option value="consent">Informed Consent Form</option>
+                  <option value="prakriti_assessment">Deha Prakriti Assessment</option>
+                  <option value="ae_report">Adverse Event (AE) / ADR Log</option>
+                  <option value="visit_note">Monitoring / Protocol Visit Note</option>
+                  <option value="document">General Study Document</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="sub-status">Initial Status</label>
+                <select id="sub-status" class="form-control">
+                  <option value="Draft" selected>Draft (Can be edited)</option>
+                  <option value="Submitted">Submitted for Verification</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="sub-notes">Content Details / Observations</label>
+              <textarea id="sub-notes" class="form-control" rows="4" placeholder="Enter findings, dosha metrics, or coded subject identifiers..."></textarea>
+            </div>
+            <div class="pane-actions">
+              <button type="button" class="btn btn-secondary" onclick="showDashTab('overview')">Cancel</button>
+              <button type="submit" class="btn btn-primary">Create Submission</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="dash-pane-assign-jobs" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>Assign Jobs</h3>
+              <p>Assign and track operational tasks across approved users and roles.</p>
+            </div>
+          </div>
+          <form id="form-assign-task" class="auth-form" onsubmit="submitTaskAssignment(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="task-assignee">Assignee <span class="req">*</span></label>
+                <select id="task-assignee" class="form-control" required>
+                  <option value="">Loading approved assignees...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="task-title">Task title <span class="req">*</span></label>
+                <input id="task-title" class="form-control" maxlength="160" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="task-description">Description</label>
+              <textarea id="task-description" class="form-control" rows="3" maxlength="4000"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="task-study">Study <span class="req">*</span></label>
+                <input id="task-study" class="form-control" value="AYUR-CT-2026-001" required>
+              </div>
+              <div class="form-group">
+                <label for="task-site">Site <span class="req">*</span></label>
+                <input id="task-site" class="form-control" value="SITE-01" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="task-priority">Priority <span class="req">*</span></label>
+                <select id="task-priority" class="form-control" required>
+                  <option>Normal</option><option>High</option><option>Critical</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="task-due-date">Due date <span class="req">*</span></label>
+                <input id="task-due-date" type="date" class="form-control" required>
+              </div>
+            </div>
+            <p id="task-form-status" class="hidden" role="status" aria-live="polite"></p>
+            <div class="pane-actions"><button type="submit" class="btn btn-primary">Assign task</button></div>
+          </form>
+          <div class="table-responsive" id="admin-task-table" style="margin-top: 22px;">
+            <table class="data-table">
+              <thead><tr><th>Task</th><th>Assignee</th><th>Study / Site</th><th>Priority</th><th>Due</th><th>Status</th><th>Overdue</th><th></th></tr></thead>
+              <tbody id="admin-task-rows"></tbody>
+            </table>
+          </div>
+          <div class="modal-overlay hidden" id="modal-edit-task">
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3>Edit Task</h3>
+                <button type="button" class="btn-close" onclick="closeModal('modal-edit-task')">&times;</button>
+              </div>
+              <form id="form-edit-task" class="auth-form" onsubmit="saveTaskEdit(event)">
+                <input id="edit-task-id" type="hidden">
+                <div class="form-group">
+                  <label for="edit-task-assignee">Assignee</label>
+                  <select id="edit-task-assignee" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                  <label for="edit-task-title">Task title</label>
+                  <input id="edit-task-title" class="form-control" maxlength="160" required>
+                </div>
+                <div class="form-group">
+                  <label for="edit-task-description">Description</label>
+                  <textarea id="edit-task-description" class="form-control" rows="3" maxlength="4000"></textarea>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="edit-task-study">Study</label>
+                    <input id="edit-task-study" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="edit-task-site">Site</label>
+                    <input id="edit-task-site" class="form-control" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="edit-task-priority">Priority</label>
+                    <select id="edit-task-priority" class="form-control"><option>Normal</option><option>High</option><option>Critical</option></select>
+                  </div>
+                  <div class="form-group">
+                    <label for="edit-task-due-date">Due date</label>
+                    <input id="edit-task-due-date" type="date" class="form-control" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="edit-task-status">Status</label>
+                  <select id="edit-task-status" class="form-control"><option>Assigned</option><option>In progress</option><option>Done</option></select>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-task')">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div id="dash-pane-assigned-by-me" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>Assigned by Me</h3>
+              <p>Work you assigned to other users and roles.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="loadCoordinatorAssignedTasks()">Refresh</button>
+          </div>
+          <div class="table-responsive" style="margin-top: 16px;">
+            <table class="data-table">
+              <thead><tr><th>Task</th><th>Assignee</th><th>Study / Site</th><th>Priority</th><th>Due date</th><th>Status</th><th>Overdue</th></tr></thead>
+              <tbody id="coordinator-assigned-task-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="dash-pane-my-tasks" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>My Tasks</h3>
+              <p>Tasks assigned to your account or role.</p>
+            </div>
+          </div>
+          <div class="table-responsive" style="margin-top: 16px;">
+            <table class="data-table">
+              <thead><tr><th>Task</th><th>Description</th><th>Study / Site</th><th>Priority</th><th>Due</th><th>Status</th><th>Update</th></tr></thead>
+              <tbody id="my-task-rows"></tbody>
+            </table>
           </div>
         </div>
 
@@ -716,108 +1033,114 @@
           </div>
         </div>
 
+        <!-- PANE E: LEGAL DOCUMENTS (ETHICS COMMITTEE, PI & ADMIN) -->
+        <div id="dash-pane-legal-docs" class="dash-pane">
+          <!-- Multi-tier Expiry Alerts Banner (90d, 60d, 30d, Expired) -->
+          <div id="legal-alerts-banner" class="sla-banner critical hidden" style="margin-bottom: 16px;">
+            <div class="sla-banner-icon">⚖️</div>
+            <div class="sla-banner-text">
+              <strong id="legal-alerts-title">STATUTORY REGULATORY EXPIRY ALERT:</strong>
+              <span id="legal-alerts-summary">Live expiry warnings active for trial documents.</span>
+            </div>
+          </div>
+
+          <div class="pane-header-row">
+            <div>
+              <h3>Institutional Ethics Committee — Legal Documents & Approvals Registry</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Statutory regulatory approvals, CTRI certificates, clinical insurance policies, and institutional agreements. Immutable and version-controlled.
+              </p>
+            </div>
+            <div class="pane-actions" style="display: flex; gap: 8px;">
+              <button class="btn btn-primary" onclick="openUploadLegalDocModal()" id="btn-open-upload-legal-doc">+ Upload Legal Document</button>
+              <button class="btn btn-secondary" onclick="renderLegalDocumentsPage()">🔄 Refresh</button>
+            </div>
+          </div>
+
+          <!-- Summary Metric Strip -->
+          <div class="kpi-grid" id="legal-kpi-grid" style="margin-top: 16px;">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Timeline View: Next to Expire -->
+          <div class="dash-card" style="margin-top: 20px;">
+            <div class="card-title-bar">
+              <h4>📅 Expiration Timeline — Next Documents to Expire</h4>
+              <span class="badge badge-info" id="timeline-urgency-badge">Live Chronological Sequence</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+              Horizontal countdown timeline tracking critical 90, 60, and 30-day statutory expiry thresholds under GCP-ASU regulations.
+            </p>
+            <div id="legal-docs-timeline-container" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <!-- Registry Table with Status Badges and Live Countdowns -->
+          <div class="dash-card" style="margin-top: 20px;">
+            <div class="card-title-bar">
+              <h4>Trial Legal Documents Ledger</h4>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <select id="filter-legal-doc-type" class="form-control" style="font-size: 0.82rem; padding: 4px 8px;" onchange="filterLegalDocumentsUI()">
+                  <option value="">All Document Types</option>
+                  <option value="EC approval letter">EC approval letter</option>
+                  <option value="protocol approval">Protocol approval</option>
+                  <option value="insurance">Insurance</option>
+                  <option value="CTRI certificate">CTRI certificate</option>
+                  <option value="MoU/contract">MoU / contract</option>
+                  <option value="licence">Licence</option>
+                  <option value="other">Other</option>
+                </select>
+                <select id="filter-legal-doc-status" class="form-control" style="font-size: 0.82rem; padding: 4px 8px;" onchange="filterLegalDocumentsUI()">
+                  <option value="">All Expiry Statuses</option>
+                  <option value="safe">Safe (>90 Days)</option>
+                  <option value="attention">Attention (30–90 Days)</option>
+                  <option value="urgent">Urgent (<30 Days)</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Document Title & Type</th>
+                    <th>Study</th>
+                    <th>Version</th>
+                    <th>Issue Date</th>
+                    <th>Expiry Date</th>
+                    <th>Status & Live Countdown</th>
+                    <th>Plain-Language Reason</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="legal-docs-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="dash-pane-leadership-legal" class="dash-pane">
+          <div class="pane-header-row">
+            <div>
+              <h3>Legal & Regulatory Documents</h3>
+              <p>Read-only registry, ordered by nearest expiry.</p>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="loadLeadershipLegalDocs()">Refresh</button>
+          </div>
+          <div id="leadership-legal-timeline" class="leadership-legal-timeline" aria-label="Legal document expiry timeline"></div>
+          <div class="table-responsive" style="margin-top: 18px;">
+            <table class="data-table">
+              <thead><tr><th>Title</th><th>Type</th><th>Issuing authority</th><th>Issue date</th><th>Expiry date</th><th>Status</th><th>Countdown</th></tr></thead>
+              <tbody id="leadership-legal-rows"></tbody>
+            </table>
+          </div>
+          <p id="leadership-legal-status" class="hidden" role="status" aria-live="polite"></p>
+        </div>
+
       </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       ESCALATION DRAWER: "Report to PI / Admin"
-       ====================================================================== -->
-  <div id="escalation-drawer-overlay" class="drawer-overlay hidden" onclick="closeEscalationDrawer(event)">
-    <div class="drawer-panel" onclick="event.stopPropagation()">
-      <div class="drawer-header">
-        <div class="drawer-title-group">
-          <span class="drawer-badge">GCP-ASU Regulatory Escalation</span>
-          <h3>Report to PI / Admin</h3>
-          <p>Instant notification dispatched to Principal Investigator and Trial Administrator.</p>
-        </div>
-        <button class="btn-close" onclick="closeEscalationDrawer()">&times;</button>
-      </div>
-
-      <form id="form-escalation-compose" class="auth-form" onsubmit="submitEscalationForm(event)">
-        <div class="form-group">
-          <label for="esc-category">Category <span class="req">*</span></label>
-          <select id="esc-category" class="form-control" required>
-            <option value="Safety">Safety (Adverse Drug Reaction / Toxicity / SAE)</option>
-            <option value="Participant">Participant (Condition change / Withdrawal / Relocation)</option>
-            <option value="Consent">Consent (Informed consent issue / Illiterate witness / Translation)</option>
-            <option value="Protocol deviation">Protocol Deviation (Dosing / Visit window / Sample handling)</option>
-            <option value="Data issue">Data Issue (CRF discrepancy / Electronic ledger / NTP Clock)</option>
-            <option value="Site issue">Site Issue (Pharmacy storage / Equipment calibration / Non-compliance)</option>
-            <option value="Ethics">Ethics (IEC approval / Amendment / Query)</option>
-            <option value="Other">Other Operational or Regulatory Notice</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Urgency Level <span class="req">*</span></label>
-          <div class="urgency-selector">
-            <label class="urgency-option">
-              <input type="radio" name="esc-urgency" value="Normal" checked>
-              <span class="urgency-card normal">
-                <strong>Normal</strong>
-                <small>Routine clinical notice</small>
-              </span>
-            </label>
-            <label class="urgency-option">
-              <input type="radio" name="esc-urgency" value="High">
-              <span class="urgency-card high">
-                <strong>High</strong>
-                <small>Action within 24h SLA</small>
-              </span>
-            </label>
-            <label class="urgency-option">
-              <input type="radio" name="esc-urgency" value="Critical">
-              <span class="urgency-card critical">
-                <strong>Critical</strong>
-                <small>SAE / Severe breach (1h SLA)</small>
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="esc-study">Trial Protocol</label>
-            <input type="text" id="esc-study" class="form-control" value="AYUR-CT-2026-001" readonly>
-          </div>
-          <div class="form-group">
-            <label for="esc-site">Site ID</label>
-            <input type="text" id="esc-site" class="form-control" value="SITE-01" readonly>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="esc-subject-code">Participant Subject Code <small>(Optional — strictly coded, never name)</small></label>
-          <select id="esc-subject-code" class="form-control">
-            <option value="">-- No specific subject / General Site Issue --</option>
-            <!-- Populated via JS with 150 subject codes -->
-          </select>
-        </div>
-
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between;">
-            <label for="esc-summary">Short Summary <span class="req">*</span></label>
-            <small id="esc-char-count" style="color: var(--text-muted); font-size: 0.78rem;">0 / 120</small>
-          </div>
-          <input type="text" id="esc-summary" class="form-control" maxlength="120" placeholder="Brief summary (max 120 characters)" required oninput="updateCharCount(this)">
-        </div>
-
-        <div class="form-group">
-          <label for="esc-details">Clinical Details & Immediate Action Taken <span class="req">*</span></label>
-          <textarea id="esc-details" class="form-control" rows="4" placeholder="Full context, doses administered, concomitant therapies, or source observations..." required></textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="esc-attachment">Optional Attachment Document</label>
-          <input type="text" id="esc-attachment" class="form-control" placeholder="Filename (e.g. lab_report_042.pdf, ec_renewal.pdf)">
-        </div>
-
-        <div class="drawer-actions">
-          <button type="button" class="btn btn-secondary" onclick="closeEscalationDrawer()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-submit-escalation">Submit Now &rarr;</button>
-        </div>
-      </form>
     </div>
   </div>
 
@@ -835,47 +1158,111 @@
   </div>
 
   <!-- ======================================================================
-       MODAL 1: NEW SUBMISSION
+       MODAL 0B: UPLOAD LEGAL DOCUMENT (EC, PI & ADMIN ONLY)
        ====================================================================== -->
-  <div class="modal-overlay hidden" id="modal-new-submission">
+  <div class="modal-overlay hidden" id="modal-upload-legal-doc">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Create New Submission</h3>
-        <button class="btn-close" onclick="closeModal('modal-new-submission')">&times;</button>
+        <h3>Upload Trial Legal Document (Supabase Storage)</h3>
+        <button class="btn-close" onclick="closeModal('modal-upload-legal-doc')">&times;</button>
       </div>
-      <form id="form-create-submission" class="auth-form">
+      <form id="form-upload-legal-doc" class="auth-form">
         <div class="form-group">
-          <label for="sub-title">Submission Title <span class="req">*</span></label>
-          <input type="text" id="sub-title" class="form-control" placeholder="e.g. Subject Visit 01 Case Report Form" required>
+          <label for="legal-doc-title">Document Title <span class="req">*</span></label>
+          <input type="text" id="legal-doc-title" class="form-control" placeholder="e.g. Annual Ethics Committee Renewal Letter" required>
         </div>
+
         <div class="form-row">
           <div class="form-group">
-            <label for="sub-type">Type <span class="req">*</span></label>
-            <select id="sub-type" class="form-control" required>
-              <option value="consent">Informed Consent Form</option>
-              <option value="prakriti_assessment">Deha Prakriti Assessment</option>
-              <option value="ae_report">Adverse Event (AE) / ADR Log</option>
-              <option value="visit_note">Monitoring / Protocol Visit Note</option>
-              <option value="document">General Study Document</option>
+            <label for="legal-doc-type">Document Type <span class="req">*</span></label>
+            <select id="legal-doc-type" class="form-control" required>
+              <option value="EC approval letter">EC approval letter</option>
+              <option value="protocol approval">protocol approval</option>
+              <option value="insurance">insurance</option>
+              <option value="CTRI certificate">CTRI certificate</option>
+              <option value="MoU/contract">MoU/contract</option>
+              <option value="licence">licence</option>
+              <option value="other">other</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="sub-status">Initial Status</label>
-            <select id="sub-status" class="form-control">
-              <option value="Draft" selected>Draft (Can be edited)</option>
-              <option value="Submitted">Submitted for Verification</option>
+            <label for="legal-doc-study">Clinical Study <span class="req">*</span></label>
+            <select id="legal-doc-study" class="form-control" required>
+              <option value="AYUR-CT-2026-001">AYUR-CT-2026-001 (Smriti-Bhramsha)</option>
+              <option value="AYUR-CT-2026-002">AYUR-CT-2026-002 (Amavata Protocol)</option>
+              <option value="AYUR-CT-2026-003">AYUR-CT-2026-003 (Madhumeha Regimen)</option>
+              <option value="ALL-STUDIES">All Studies (Institutional)</option>
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label for="sub-notes">Content Details / Observations</label>
-          <textarea id="sub-notes" class="form-control" rows="3" placeholder="Enter findings, dosha metrics, or subject identifiers..."></textarea>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="legal-doc-version">Version Tag <span class="req">*</span></label>
+            <input type="text" id="legal-doc-version" class="form-control" placeholder="v1.0" value="v1.0" required>
+          </div>
+          <div class="form-group">
+            <label for="legal-doc-issue-date">Issue Date <span class="req">*</span></label>
+            <input type="date" id="legal-doc-issue-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="legal-doc-expiry-date">Expiry Date <span class="req">*</span></label>
+            <input type="date" id="legal-doc-expiry-date" class="form-control" required>
+          </div>
         </div>
+
+        <div class="form-group">
+          <label for="legal-doc-file">File Upload (Private Supabase Storage) <span class="req">*</span></label>
+          <input type="file" id="legal-doc-file" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.docx" required>
+          <small class="hint-text">Saved into encrypted Supabase Storage bucket <code>trial-documents</code> with 5-minute pre-signed access.</small>
+        </div>
+
+        <div class="form-group highlight-box" style="padding: 10px; background: var(--bg-subtle, #f8fafc); border-radius: 6px;">
+          <label for="legal-doc-reason">Regulatory Context / Expiry Description</label>
+          <input type="text" id="legal-doc-reason" class="form-control" placeholder="e.g. Annual IEC protocol renewal under GCP-ASU Section 3.2">
+          <small class="hint-text">If a document with the same title or type exists, this upload creates a new version with preserved history.</small>
+        </div>
+
+        <div id="legal-doc-error-msg" class="error-msg-box hidden" style="color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.85rem;"></div>
+
         <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-new-submission')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Create Submission</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-upload-legal-doc')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-legal-doc">Upload & Save Version</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 0C: DOCUMENT VERSION HISTORY (AUDIT TRAIL)
+       ====================================================================== -->
+  <div class="modal-overlay hidden" id="modal-version-history">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="version-history-title">Document Version History</h3>
+        <button class="btn-close" onclick="closeModal('modal-version-history')">&times;</button>
+      </div>
+      <div style="padding: 14px 0;">
+        <p id="version-history-subtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;"></p>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Uploaded At</th>
+                <th>Uploaded By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="version-history-tbody">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-version-history')">Close</button>
+      </div>
     </div>
   </div>
 

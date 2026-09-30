@@ -14,6 +14,7 @@ from ..core.audit import log_audit_event
 from .deps import get_current_user, require_role
 
 router = APIRouter(prefix="/ethics", tags=["GCP-ASU Ethics Committee (EC) Module"])
+legal_router = APIRouter(tags=["Shared Legal Documents"])
 
 STATUTORY_ROLES = [
     "Chairperson",
@@ -194,3 +195,420 @@ def auto_dispatch_sae_to_ec(
         "receipt_hash": receipt_hash,
         "recipients_count": transmission.ec_members_dispatched
     }
+
+
+# ==============================================================================
+# ETHICS COMMITTEE: LEGAL DOCUMENTS & EXPIRY COUNTDOWN MODULE
+# ==============================================================================
+
+LEGAL_DOC_TYPES = [
+    "EC approval letter",
+    "protocol approval",
+    "insurance",
+    "CTRI certificate",
+    "MoU/contract",
+    "licence",
+    "other"
+]
+
+def generate_initial_legal_docs() -> List[Dict[str, Any]]:
+    now = datetime.now(timezone.utc)
+    return [
+        {
+            "id": "leg-001",
+            "title": "CTRI Clinical Trial Registry Certificate",
+            "type": "CTRI certificate",
+            "study": "AYUR-CT-2026-001",
+            "version": "v1.0",
+            "issue_date": (now - timedelta(days=55)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=310)).strftime("%Y-%m-%d"),
+            "days_remaining": 310,
+            "status": "safe",
+            "status_label": "Expires in 310 days",
+            "reason": "Statutory national CTRI registration valid for full study duration.",
+            "file_name": "CTRI_Registration_2026_09_0812.pdf",
+            "file_size": "2.4 MB",
+            "uploaded_by": "Dr. Rajeshwar Sharma (EC Chair)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=55)).isoformat(), "uploaded_by": "Dr. Rajeshwar Sharma"}
+            ]
+        },
+        {
+            "id": "leg-002",
+            "title": "Institutional Protocol Approval Clearance",
+            "type": "protocol approval",
+            "study": "AYUR-CT-2026-001",
+            "version": "v2.0",
+            "issue_date": (now - timedelta(days=185)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=180)).strftime("%Y-%m-%d"),
+            "days_remaining": 180,
+            "status": "safe",
+            "status_label": "Expires in 180 days",
+            "reason": "Amended regimen approved with zero high-risk dosha warnings.",
+            "file_name": "IEC_Protocol_Approval_AYUR001_v2.pdf",
+            "file_size": "4.1 MB",
+            "uploaded_by": "Member Secretary (IEC)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=365)).isoformat(), "uploaded_by": "Prof. Sharma (PI)"},
+                {"version": "v2.0", "uploaded_at": (now - timedelta(days=185)).isoformat(), "uploaded_by": "Member Secretary (IEC)"}
+            ]
+        },
+        {
+            "id": "leg-003",
+            "title": "Hospital Multi-Site Clinical Trial MoU & Contract",
+            "type": "MoU/contract",
+            "study": "AYUR-CT-2026-001",
+            "version": "v1.1",
+            "issue_date": (now - timedelta(days=250)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=115)).strftime("%Y-%m-%d"),
+            "days_remaining": 115,
+            "status": "safe",
+            "status_label": "Expires in 115 days",
+            "reason": "Inter-institutional governance contract with Jamnagar IPGT&RA.",
+            "file_name": "MoU_AIIA_IPGTRA_Clinical_2026.pdf",
+            "file_size": "1.8 MB",
+            "uploaded_by": "Legal Expert (IEC)",
+            "versions": [
+                {"version": "v1.1", "uploaded_at": (now - timedelta(days=250)).isoformat(), "uploaded_by": "Legal Expert (IEC)"}
+            ]
+        },
+        {
+            "id": "leg-004",
+            "title": "Subject Clinical Trial Insurance Policy",
+            "type": "insurance",
+            "study": "AYUR-CT-2026-001",
+            "version": "v1.0",
+            "issue_date": (now - timedelta(days=297)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=68)).strftime("%Y-%m-%d"),
+            "days_remaining": 68,
+            "status": "attention",
+            "status_label": "Expires in 68 days",
+            "reason": "Trial insurance policy renewal due with underwriter within 68 days to maintain continuous patient coverage.",
+            "file_name": "NewIndia_ClinicalInsurance_Policy_2026.pdf",
+            "file_size": "3.2 MB",
+            "uploaded_by": "Admin (System)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=297)).isoformat(), "uploaded_by": "Admin (System)"}
+            ]
+        },
+        {
+            "id": "leg-005",
+            "title": "AYUSH GMP Drug Manufacturing Licence (Extract Batch)",
+            "type": "licence",
+            "study": "AYUR-CT-2026-002",
+            "version": "v1.0",
+            "issue_date": (now - timedelta(days=323)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=42)).strftime("%Y-%m-%d"),
+            "days_remaining": 42,
+            "status": "attention",
+            "status_label": "Expires in 42 days",
+            "reason": "Statutory manufacturing licence annual re-inspection due; renew before expiration to avoid investigational drug dosing stoppage.",
+            "file_name": "AYUSH_GMP_Manufacturing_Licence_Batch04.pdf",
+            "file_size": "1.5 MB",
+            "uploaded_by": "Prof. Sharma (PI)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=323)).isoformat(), "uploaded_by": "Prof. Sharma (PI)"}
+            ]
+        },
+        {
+            "id": "leg-006",
+            "title": "Annual Ethics Committee Protocol Renewal Letter",
+            "type": "EC approval letter",
+            "study": "AYUR-CT-2026-002",
+            "version": "v1.0",
+            "issue_date": (now - timedelta(days=346)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=19)).strftime("%Y-%m-%d"),
+            "days_remaining": 19,
+            "status": "urgent",
+            "status_label": "Expires in 19 days",
+            "reason": "Mandatory annual ethics committee review overdue for renewal; unrenewed trials must halt subject recruitment under GCP-ASU.",
+            "file_name": "IEC_Annual_Renewal_Decision_AYUR002.pdf",
+            "file_size": "2.1 MB",
+            "uploaded_by": "Dr. Rajeshwar Sharma (EC Chair)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=346)).isoformat(), "uploaded_by": "Dr. Rajeshwar Sharma"}
+            ]
+        },
+        {
+            "id": "leg-007",
+            "title": "Biological Specimen Transfer Agreement (BMTA)",
+            "type": "MoU/contract",
+            "study": "AYUR-CT-2026-003",
+            "version": "v1.0",
+            "issue_date": (now - timedelta(days=174)).strftime("%Y-%m-%d"),
+            "expiry_date": (now + timedelta(days=6)).strftime("%Y-%m-%d"),
+            "days_remaining": 6,
+            "status": "urgent",
+            "status_label": "Expires in 6 days",
+            "reason": "Biological specimen transit authorization expires in 6 days; samples cannot be moved across labs without active BMTA clearance.",
+            "file_name": "BMTA_Specimen_Transport_Agreement_2026.pdf",
+            "file_size": "1.2 MB",
+            "uploaded_by": "Member Secretary (IEC)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=174)).isoformat(), "uploaded_by": "Member Secretary (IEC)"}
+            ]
+        },
+        {
+            "id": "leg-008",
+            "title": "Institutional Bio-safety Committee (IBSC) Clearance",
+            "type": "other",
+            "study": "AYUR-CT-2026-003",
+            "version": "v1.0",
+            "issue_date": (now - timedelta(days=380)).strftime("%Y-%m-%d"),
+            "expiry_date": (now - timedelta(days=14)).strftime("%Y-%m-%d"),
+            "days_remaining": -14,
+            "status": "expired",
+            "status_label": "Expired 14 days ago",
+            "reason": "Expired 14 days ago: Dosing paused for cohort C pending expedited DBT/RCGM bio-safety re-validation.",
+            "file_name": "IBSC_Biosafety_Clearance_2025.pdf",
+            "file_size": "1.9 MB",
+            "uploaded_by": "Admin (System)",
+            "versions": [
+                {"version": "v1.0", "uploaded_at": (now - timedelta(days=380)).isoformat(), "uploaded_by": "Admin (System)"}
+            ]
+        }
+    ]
+
+_legal_docs_cache: List[Dict[str, Any]] = []
+
+def get_legal_docs_store() -> List[Dict[str, Any]]:
+    global _legal_docs_cache
+    if not _legal_docs_cache:
+        _legal_docs_cache = generate_initial_legal_docs()
+    return _legal_docs_cache
+
+
+@router.get("/legal-documents")
+def list_legal_documents(
+    current_user: User = Depends(require_role(["EC Member", "Principal Investigator", "Admin"]))
+):
+    """
+    Returns legal documents with live expiry countdowns, status badges, and timeline sorting.
+    Access strictly restricted to EC Member, PI, and Admin.
+    """
+    docs = get_legal_docs_store()
+    now = datetime.now(timezone.utc)
+
+    # Recalculate live days remaining
+    for d in docs:
+        try:
+            exp = datetime.strptime(d["expiry_date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            delta_days = (exp - now).days
+            d["days_remaining"] = delta_days
+            if delta_days > 90:
+                d["status"] = "safe"
+                d["status_label"] = f"Expires in {delta_days} days"
+            elif 30 <= delta_days <= 90:
+                d["status"] = "attention"
+                d["status_label"] = f"Expires in {delta_days} days"
+            elif 0 <= delta_days < 30:
+                d["status"] = "urgent"
+                d["status_label"] = f"Expires in {delta_days} days"
+            else:
+                d["status"] = "expired"
+                d["status_label"] = f"Expired {abs(delta_days)} days ago"
+        except Exception:
+            pass
+
+    # Sort: expired first, then ascending by days remaining (next to expire)
+    sorted_docs = sorted(docs, key=lambda x: x.get("days_remaining", 9999))
+
+    # Calculate statutory auto alerts: 90, 60, 30 days and on expiry
+    alerts = []
+    expired_count = sum(1 for d in docs if d["status"] == "expired")
+    urgent_count = sum(1 for d in docs if d["status"] == "urgent")
+    attention_count = sum(1 for d in docs if d["status"] == "attention")
+
+    if expired_count > 0:
+        alerts.append({
+            "threshold": "expired",
+            "level": "critical",
+            "message": f"Critical Expiry Alert: {expired_count} regulatory document has expired. Immediate statutory action required under GCP-ASU."
+        })
+    if urgent_count > 0:
+        alerts.append({
+            "threshold": "30_days",
+            "level": "urgent",
+            "message": f"30-Day Alert: {urgent_count} document(s) expiring in under 30 days. Renewal submission mandatory to avoid trial halt."
+        })
+    if attention_count > 0:
+        alerts.append({
+            "threshold": "60_90_days",
+            "level": "warning",
+            "message": f"60/90-Day Early Warning: {attention_count} document(s) due for renewal within the next 30 to 90 days."
+        })
+
+    return {
+        "documents": sorted_docs,
+        "total_documents": len(docs),
+        "counts": {
+            "safe": sum(1 for d in docs if d["status"] == "safe"),
+            "attention": attention_count,
+            "urgent": urgent_count,
+            "expired": expired_count
+        },
+        "alerts": alerts
+    }
+
+
+@legal_router.get("/legal-documents")
+def list_leadership_legal_documents(
+    current_user: User = Depends(require_role(["Institution Leadership"]))
+):
+    today = datetime.now(timezone.utc).date()
+    authorities = {
+        "CTRI certificate": "Clinical Trials Registry - India",
+        "protocol approval": "Institutional Ethics Committee",
+        "EC approval letter": "Institutional Ethics Committee",
+        "insurance": "Clinical Trial Insurer",
+        "MoU/contract": "Participating Institution",
+        "licence": "AYUSH Licensing Authority",
+        "other": "Institutional Biosafety Committee",
+    }
+    documents = []
+    for document in get_legal_docs_store():
+        expiry = datetime.strptime(document["expiry_date"], "%Y-%m-%d").date()
+        days_remaining = (expiry - today).days
+        if days_remaining < 0:
+            status_label = "Expired"
+            countdown = f"Expired {abs(days_remaining)} days ago"
+        elif days_remaining <= 30:
+            status_label = "Expiring soon"
+            countdown = f"Expires in {days_remaining} days"
+        else:
+            status_label = "Active"
+            countdown = f"Expires in {days_remaining} days"
+        document_type = document.get("type", "other")
+        documents.append({
+            "id": document["id"],
+            "title": document["title"],
+            "type": document_type,
+            "issuing_authority": authorities.get(document_type, "Institutional Authority"),
+            "issue_date": document.get("issue_date"),
+            "expiry_date": document["expiry_date"],
+            "days_remaining": days_remaining,
+            "status": status_label,
+            "countdown": countdown,
+        })
+
+    documents.sort(key=lambda item: item["days_remaining"])
+    return {"documents": documents}
+
+
+@router.post("/legal-documents", status_code=status.HTTP_201_CREATED)
+def upload_legal_document(
+    payload: Dict[str, Any],
+    request: Request,
+    current_user: User = Depends(require_role(["EC Member", "Principal Investigator", "Admin"])),
+    db: Session = Depends(get_db)
+):
+    """
+    Uploads a new trial legal document or creates a new version of an existing document.
+    Documents are never deleted. All uploads are logged to the immutable audit trail.
+    """
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    docs = get_legal_docs_store()
+    now = datetime.now(timezone.utc)
+
+    title = payload.get("title", "").strip()
+    doc_type = payload.get("type", "other")
+    study = payload.get("study", "AYUR-CT-2026-001")
+    version = payload.get("version", "v1.0")
+    issue_date = payload.get("issue_date", now.strftime("%Y-%m-%d"))
+    expiry_date = payload.get("expiry_date", (now + timedelta(days=365)).strftime("%Y-%m-%d"))
+    reason = payload.get("reason", "Uploaded under statutory GCP-ASU documentation guidelines.")
+    file_name = payload.get("file_name", "uploaded_legal_doc.pdf")
+
+    if not title:
+        raise HTTPException(status_code=400, detail="Document title is mandatory.")
+
+    # Check if a document with the same title or type/study already exists -> create new version
+    existing = next((d for d in docs if d["title"].lower() == title.lower() or (d["type"] == doc_type and d["study"] == study)), None)
+
+    if existing:
+        # Increment version snapshot
+        new_version_tag = f"v{float(existing['version'].replace('v', '')) + 1.0:.1f}" if existing['version'].startswith('v') else version
+        existing["versions"].append({
+            "version": existing["version"],
+            "uploaded_at": now.isoformat(),
+            "uploaded_by": current_user.full_name
+        })
+        existing["version"] = new_version_tag
+        existing["issue_date"] = issue_date
+        existing["expiry_date"] = expiry_date
+        existing["file_name"] = file_name
+        existing["reason"] = reason
+        target_doc = existing
+        action_verb = "NEW_VERSION_UPLOADED"
+    else:
+        new_doc = {
+            "id": f"leg-{len(docs) + 1:03d}",
+            "title": title,
+            "type": doc_type,
+            "study": study,
+            "version": version,
+            "issue_date": issue_date,
+            "expiry_date": expiry_date,
+            "days_remaining": (datetime.strptime(expiry_date, "%Y-%m-%d").replace(tzinfo=timezone.utc) - now).days,
+            "status": "safe",
+            "status_label": "Expires in 365 days",
+            "reason": reason,
+            "file_name": file_name,
+            "file_size": "2.8 MB",
+            "uploaded_by": current_user.full_name,
+            "versions": [
+                {"version": version, "uploaded_at": now.isoformat(), "uploaded_by": current_user.full_name}
+            ]
+        }
+        docs.insert(0, new_doc)
+        target_doc = new_doc
+        action_verb = "LEGAL_DOCUMENT_UPLOADED"
+
+    # Log to audit trail
+    log_audit_event(
+        db=db,
+        user_id=current_user.id,
+        user_email=current_user.email,
+        role=current_user.role,
+        ip_address=client_ip,
+        action=action_verb,
+        entity_type="LegalDocument",
+        entity_id=target_doc["id"],
+        details=f"{action_verb}: '{target_doc['title']}' ({target_doc['type']}) version {target_doc['version']}. Expiry: {target_doc['expiry_date']}",
+        site_id=current_user.site_id
+    )
+
+    return target_doc
+
+
+@router.post("/legal-documents/{doc_id}/view")
+def log_view_legal_document(
+    doc_id: str,
+    request: Request,
+    current_user: User = Depends(require_role(["EC Member", "Principal Investigator", "Admin"])),
+    db: Session = Depends(get_db)
+):
+    """
+    Logs document access/view event in audit log (DPDP & GCP-ASU mandate).
+    """
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    docs = get_legal_docs_store()
+    doc = next((d for d in docs if d["id"] == doc_id), None)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Legal document not found.")
+
+    log_audit_event(
+        db=db,
+        user_id=current_user.id,
+        user_email=current_user.email,
+        role=current_user.role,
+        ip_address=client_ip,
+        action="VIEW_LEGAL_DOCUMENT",
+        entity_type="LegalDocument",
+        entity_id=doc["id"],
+        details=f"Viewed / downloaded '{doc['title']}' ({doc['version']})",
+        site_id=current_user.site_id
+    )
+
+    return {"message": "Document view logged in audit trail.", "document": doc}
+

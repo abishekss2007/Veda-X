@@ -45,13 +45,61 @@ def get_current_user(
             detail="Two-step authentication incomplete. Please verify your OTP to proceed.",
         )
 
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload.")
+    if payload.get("principal_type") == "demo":
+        email = payload.get("email")
+        role = payload.get("role")
+        site_id = payload.get("site_id")
+        if payload.get("type") != "access" or not email or not role or not site_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid demo session.")
+        if payload.get("sub") != f"demo:{email}":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid demo session.")
+        return User(
+            id=None,
+            email=email,
+            full_name=payload.get("full_name") or email,
+            role=role,
+            site_id=site_id,
+            is_active=True,
+        )
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if not user or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is inactive or revoked.")
+    else:
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload.")
+
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if not user or not user.is_active:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is inactive or revoked.")
+
+    # Reject any request carrying a preview role or view as parameter unless the session matches that role
+    preview_role = (
+        request.query_params.get("preview_role")
+        or request.query_params.get("previewRole")
+        or request.query_params.get("view_as")
+        or request.query_params.get("viewAs")
+        or request.query_params.get("view_as_role")
+        or request.query_params.get("viewAsRole")
+        or request.headers.get("x-preview-role")
+        or request.headers.get("x-view-as")
+    )
+    if preview_role and preview_role != user.role:
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        log_audit_event(
+            db=db,
+            user_id=getattr(user, "id", None),
+            user_email=user.email,
+            role=user.role,
+            ip_address=client_ip,
+            action="UNAUTHORIZED_PREVIEW_ROLE_ATTEMPT",
+            entity_type="RolePreview",
+            entity_id=str(preview_role),
+            reason=f"Role preview '{preview_role}' denied for session role '{user.role}'. Session for that role is required.",
+            site_id=getattr(user, "site_id", None)
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Preview role '{preview_role}' rejected. Session for that role is required."
+        )
 
     return user
 

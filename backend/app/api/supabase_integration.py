@@ -1,11 +1,15 @@
+import os
+import secrets
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from datetime import datetime, timezone, timedelta
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from pydantic import BaseModel, EmailStr, Field
 
 from ..core.supabase_client import get_supabase_admin_client, is_supabase_enabled, get_supabase_url
+from ..core.security import create_access_token
 from ..core.audit import log_audit_event
 from ..db.database import get_db
+from ..db.models import User
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/supabase", tags=["Supabase Integration & Submissions"])
@@ -75,6 +79,7 @@ class LoginIn(BaseModel):
     password: str
 
 class VerifyOTPIn(BaseModel):
+    challenge_id: str = Field(..., min_length=32, max_length=128)
     email: EmailStr
     role: str
     otp_code: str = Field(..., min_length=6, max_length=6)
@@ -162,6 +167,7 @@ def register_user(req: RegisterIn, request: Request, db: Session = Depends(get_d
     return {"message": "Registration received. An admin will approve your account."}
 
 _login_failures: Dict[str, Dict[str, Any]] = {}
+_pending_otp_challenges: Dict[str, Dict[str, Any]] = {}
 
 @router.post("/auth/login")
 def login_user(req: LoginIn, request: Request, db: Session = Depends(get_db)):
@@ -208,14 +214,16 @@ def login_user(req: LoginIn, request: Request, db: Session = Depends(get_db)):
     }
 
     authenticated = False
+    principal_name = email_lower.split("@", 1)[0].replace(".", " ").title()
+    principal_site = "SITE-01"
     if email_lower in demo_passwords:
         expected_pwd, expected_role = demo_passwords[email_lower]
-        if req.password != expected_pwd:
+        shared_demo_login = os.getenv("DEMO_MODE", "true").lower() == "true" and req.password == "Demo@2026"
+        if req.password != expected_pwd and not shared_demo_login:
             # Record failure
             f = _login_failures.setdefault(email_lower, {"attempts": 0, "locked_until": None})
             f["attempts"] += 1
             if f["attempts"] >= 5:
-                from datetime import timedelta
                 f["locked_until"] = now + timedelta(minutes=15)
             log_audit_event(
                 db=db,
@@ -250,12 +258,21 @@ def login_user(req: LoginIn, request: Request, db: Session = Depends(get_db)):
         if client:
             try:
                 auth_res = client.auth.sign_in_with_password({"email": req.email, "password": req.password})
+                profile_res = client.from_("profiles").select("full_name, role, site, status").eq("id", str(auth_res.user.id)).maybe_single().execute()
+                profile = profile_res.data
+                if not profile or profile.get("status") != "approved":
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account is not approved.")
+                if profile.get("role") != req.role:
+                    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account is not approved for that role.")
+                principal_name = profile.get("full_name") or principal_name
+                principal_site = profile.get("site") or principal_site
                 authenticated = True
+            except HTTPException:
+                raise
             except Exception:
                 f = _login_failures.setdefault(email_lower, {"attempts": 0, "locked_until": None})
                 f["attempts"] += 1
                 if f["attempts"] >= 5:
-                    from datetime import timedelta
                     f["locked_until"] = now + timedelta(minutes=15)
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong email or password")
         else:
@@ -264,19 +281,57 @@ def login_user(req: LoginIn, request: Request, db: Session = Depends(get_db)):
     # Reset failure counter on valid password & role
     _login_failures.pop(email_lower, None)
 
+    challenge_id = secrets.token_urlsafe(32)
+    now = datetime.now(timezone.utc)
+    for challenge, data in list(_pending_otp_challenges.items()):
+        if data["expires_at"] <= now:
+            _pending_otp_challenges.pop(challenge, None)
+    _pending_otp_challenges[challenge_id] = {
+        "email": email_lower,
+        "role": req.role,
+        "name": principal_name,
+        "site": principal_site,
+        "expires_at": now + timedelta(minutes=5),
+    }
+
     return {
         "step": "VERIFICATION_REQUIRED",
-        "email": req.email,
+        "email": email_lower,
         "role": req.role,
+        "challenge_id": challenge_id,
         "demo_mode": True,
         "demo_code": "123456",
         "expires_in_minutes": 5
     }
 
 @router.post("/auth/verify-otp")
-def verify_otp_endpoint(req: VerifyOTPIn, request: Request, db: Session = Depends(get_db)):
+def verify_otp_endpoint(req: VerifyOTPIn, request: Request, response: Response, db: Session = Depends(get_db)):
+    challenge = _pending_otp_challenges.get(req.challenge_id)
+    if not challenge or challenge["email"] != req.email.lower() or challenge["role"] != req.role:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification challenge is invalid or expired.")
+    if challenge["expires_at"] <= datetime.now(timezone.utc):
+        _pending_otp_challenges.pop(req.challenge_id, None)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification challenge is invalid or expired.")
     if req.otp_code != "123456":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code.")
+
+    _pending_otp_challenges.pop(req.challenge_id, None)
+    access_token = create_access_token({
+        "sub": f"demo:{challenge['email']}",
+        "email": challenge["email"],
+        "role": challenge["role"],
+        "full_name": challenge["name"],
+        "site_id": challenge["site"],
+        "principal_type": "demo",
+    })
+    response.set_cookie(
+        key="ayur_access_token",
+        value=access_token,
+        httponly=True,
+        secure=request.url.scheme == "https",
+        samesite="Strict",
+        max_age=15 * 60,
+    )
 
     role_slug_map = {
         "Principal Investigator": "/dashboard/pi",
@@ -304,9 +359,12 @@ def verify_otp_endpoint(req: VerifyOTPIn, request: Request, db: Session = Depend
 
     return {
         "success": True,
-        "email": req.email,
-        "role": req.role,
-        "dashboard_route": role_slug_map.get(req.role, "/dashboard/coordinator")
+        "verified": True,
+        "email": challenge["email"],
+        "role": challenge["role"],
+        "site_id": challenge["site"],
+        "full_name": challenge["name"],
+        "dashboard_route": role_slug_map.get(challenge["role"], "/dashboard/coordinator")
     }
 
 @router.get("/submissions")

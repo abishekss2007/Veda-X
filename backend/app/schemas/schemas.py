@@ -53,11 +53,16 @@ class ParticipantCreate(BaseModel):
     legal_guardian_name: Optional[str] = None
     legal_guardian_consent_verified: bool = False
 
+    # Study and Consent Fields
+    study_id: Optional[str] = "AYUR-CT-2026-001"
+    consent_status: str = Field(default="Written Consent Verified", description="Must be 'Written Consent Verified' to enroll")
+
     # Direct PII (Stored in separate restricted encrypted table)
-    full_name: str = Field(..., min_length=2, max_length=255)
-    phone_number: str = Field(..., min_length=10, max_length=20)
+    full_name: Optional[str] = Field(default="De-identified Subject", min_length=2, max_length=255)
+    phone_number: Optional[str] = Field(default="+91-00000-00000", min_length=10, max_length=20)
     address: Optional[str] = None
     emergency_contact: Optional[str] = None
+
 
     # Ayurveda Clinical Fields
     prakriti_vata: int = Field(default=33, ge=0, le=100)

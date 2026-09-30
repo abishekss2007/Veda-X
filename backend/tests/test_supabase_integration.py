@@ -33,6 +33,7 @@ def test_supabase_wrong_role_for_account_refused():
 # TEST: 2FA OTP Step & Wrong OTP code is refused
 # ==============================================================================
 def test_supabase_otp_flow_and_wrong_otp():
+    client.cookies.clear()
     # Step 1: Valid Login triggers 2FA
     login_resp = client.post("/api/supabase/auth/login", json={
         "email": "doctor@ayurctms.demo",
@@ -42,9 +43,12 @@ def test_supabase_otp_flow_and_wrong_otp():
     assert login_resp.status_code == 200
     assert login_resp.json()["step"] == "VERIFICATION_REQUIRED"
     assert login_resp.json()["demo_code"] == "123456"
+    challenge_id = login_resp.json()["challenge_id"]
+    assert client.get("/api/escalations").status_code == 401
 
     # Step 2: Wrong OTP fails
     otp_fail = client.post("/api/supabase/auth/verify-otp", json={
+        "challenge_id": challenge_id,
         "email": "doctor@ayurctms.demo",
         "role": "Doctor / Investigator",
         "otp_code": "999999"
@@ -54,13 +58,25 @@ def test_supabase_otp_flow_and_wrong_otp():
 
     # Step 3: Correct OTP succeeds and routes to dashboard
     otp_ok = client.post("/api/supabase/auth/verify-otp", json={
+        "challenge_id": challenge_id,
         "email": "doctor@ayurctms.demo",
         "role": "Doctor / Investigator",
         "otp_code": "123456"
     })
     assert otp_ok.status_code == 200
     assert otp_ok.json()["success"] is True
+    assert otp_ok.json()["verified"] is True
     assert otp_ok.json()["dashboard_route"] == "/dashboard/doctor"
+    assert "ayur_access_token" in otp_ok.cookies
+    assert client.get("/api/escalations").status_code == 200
+
+    replay = client.post("/api/supabase/auth/verify-otp", json={
+        "challenge_id": challenge_id,
+        "email": "doctor@ayurctms.demo",
+        "role": "Doctor / Investigator",
+        "otp_code": "123456"
+    })
+    assert replay.status_code == 400
 
 # ==============================================================================
 # TEST: Registration DPDP Consent Checkbox Enforced

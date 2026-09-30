@@ -676,6 +676,29 @@ body {
   background-color: #e2e8f0;
 }
 
+.report-pane-action {
+  min-height: 44px;
+  padding: 10px 18px;
+  color: var(--accent-hover);
+  background: var(--bg-surface);
+  border: 1px solid var(--accent-primary);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.report-pane-action:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-hover);
+}
+
+.report-pane-action-icon {
+  display: inline-grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
 .btn-outline-danger {
   background: transparent;
   color: var(--color-red);
@@ -708,8 +731,37 @@ body {
 .badge-green { background: #dcfce7; color: #15803d; }
 .badge-amber { background: #fef3c7; color: #b45309; }
 .badge-red { background: #fee2e2; color: #b91c1c; }
+.badge-darkred { background: #7f1d1d; color: #fecaca; font-weight: 700; border: 1px solid #991b1b; }
 .badge-info { background: #e0f2fe; color: #0369a1; }
 .badge-secondary { background: #f1f5f9; color: #475569; }
+
+/* Legal Documents Timeline Styles */
+.timeline-item-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.timeline-item-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+.timeline-progress-bar-wrap {
+  flex: 1;
+  background: var(--bg-subtle);
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+.timeline-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+}
+
 
 /* ==============================================================================
    Dashboard Shell Layout (Left Nav + Main Workspace)
@@ -806,6 +858,33 @@ body {
 
 .dash-pane { display: none; }
 .dash-pane.active { display: block; }
+
+.dashboard-shell.is-fullscreen-pane {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow-y: auto;
+  background: var(--bg-body);
+}
+
+.dashboard-shell.is-fullscreen-pane .dash-sidebar,
+.dashboard-shell.is-fullscreen-pane .dash-top-bar {
+  display: none;
+}
+
+.dashboard-shell.is-fullscreen-pane .dash-main-area {
+  min-height: 100vh;
+  padding: clamp(16px, 3vw, 40px);
+}
+
+.dashboard-shell.is-fullscreen-pane .dash-pane.active {
+  width: 100%;
+  min-height: calc(100vh - 32px);
+}
 
 .role-welcome-banner {
   background: var(--bg-surface);
@@ -1780,6 +1859,52 @@ body {
   .chart-bar-seg,
   .donut-slice {
     transition: none !important;
+  }
+}
+
+.leadership-legal-timeline {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.leadership-legal-timeline-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 1.4fr);
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.leadership-legal-timeline-row strong,
+.leadership-legal-timeline-row small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.leadership-legal-timeline-row small {
+  margin-top: 3px;
+  color: var(--text-muted);
+}
+
+.leadership-legal-timeline-track {
+  height: 8px;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.leadership-legal-timeline-fill {
+  height: 100%;
+}
+
+.leadership-legal-timeline-fill.active { background: #16a34a; }
+.leadership-legal-timeline-fill.expiring { background: #d97706; }
+.leadership-legal-timeline-fill.expired { background: #dc2626; }
+
+@media (max-width: 640px) {
+  .leadership-legal-timeline-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
