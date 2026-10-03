@@ -9,6 +9,7 @@ This module implements a decoupled **Supabase Backend** for AyurCTMS, incorporat
 ```text
 /backend/supabase/
   README.md              Setup steps, key configuration & architecture
+  schema.sql             Complete Supabase database bootstrap (schema, functions, triggers, RLS & storage)
   .env.example           Environment variables (placeholders only)
   client.ts              Browser client (publishable key) & server client (secret key)
   migrations/
@@ -44,17 +45,14 @@ This module implements a decoupled **Supabase Backend** for AyurCTMS, incorporat
 
 ---
 
-## 3. How to Run Migrations in Supabase
+## 3. Set Up the Database in Supabase
 
 1. Open your [Supabase Project Dashboard](https://supabase.com/dashboard).
 2. Go to the **SQL Editor** tab on the left navigation bar.
-3. Run the migrations in order:
-   - Run `migrations/001_profiles_roles.sql`
-   - Run `migrations/002_submissions.sql`
-   - Run `migrations/003_documents.sql`
-   - Run `migrations/004_audit_security_logs.sql`
-   - Run `migrations/005_rls_policies.sql`
-4. Run `seed/seed_demo_data.sql` to populate synthetic trial records.
+3. Open [`schema.sql`](./schema.sql), copy its full contents into the SQL Editor, and run it. It combines migrations `001` through `006`, including the profiles, submissions, documents, audit/security logs, RLS policies, escalation tables, triggers, and storage bucket setup.
+4. To optionally populate synthetic trial records, run [`seed/seed_demo_data.sql`](./seed/seed_demo_data.sql) separately after the schema.
+
+The script expects a Supabase project with its managed `auth` and `storage` schemas available. It creates database objects; it does not create the Supabase project, credentials, Auth users, or demo records. Never put the Supabase secret/service-role key in SQL or browser code.
 
 ---
 
