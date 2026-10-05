@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from ..core.audit import log_audit_event
 from ..db.database import get_db
 from ..db.models import User
+from ..core.supabase_client import get_supabase_admin_client
 from .deps import get_current_user, require_role
 
 router = APIRouter(prefix="/escalations", tags=["Escalations & Superior Reporting"])
@@ -518,6 +519,80 @@ class EscalationResolveIn(BaseModel):
     resolution_notes: str
 
 # ==============================================================================
+# SUPABASE PERSISTENCE
+# Reports are stored in public.escalations / escalation_events / notifications.
+# The synthetic records above stay as read-only demo data alongside them, and
+# are the only store when Supabase is not configured.
+# ==============================================================================
+def _is_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+        return True
+    except ValueError:
+        return False
+
+def _supabase_failure(action: str, exc: Exception) -> HTTPException:
+    print(f"[Supabase Error] {action}: {exc}")
+    return HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Supabase could not {action}: {exc}")
+
+def _persisted_escalations(client, esc_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Loads Supabase escalations shaped like the in-memory records (thread under 'events', sender as email)."""
+    query = client.from_("escalations").select("*, escalation_events(*)")
+    if esc_id:
+        query = query.eq("id", esc_id)
+    rows = query.order("created_at", desc=True).execute().data
+    emails = {p["id"]: p["email"] for p in client.from_("profiles").select("id, email").execute().data}
+    for row in rows:
+        row["events"] = sorted(row.pop("escalation_events", None) or [], key=lambda e: e["created_at"])
+        row["from_user"] = emails.get(row["from_user"]) or ""
+        row["attachment_name"] = None
+    return rows
+
+def _all_escalations() -> List[Dict[str, Any]]:
+    client = get_supabase_admin_client()
+    if not client:
+        return _synthetic_escalations
+    try:
+        return _persisted_escalations(client) + _synthetic_escalations
+    except Exception as exc:
+        raise _supabase_failure("load escalations", exc)
+
+def _apply_escalation_change(esc_id: str, changes: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
+    """Applies field changes plus their thread event to one escalation, in Supabase or the demo store."""
+    client = get_supabase_admin_client()
+    if client and _is_uuid(esc_id):
+        try:
+            if changes:
+                found = client.from_("escalations").update(changes).eq("id", esc_id).execute()
+            else:
+                found = client.from_("escalations").select("id").eq("id", esc_id).execute()
+            if not found.data:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
+            client.from_("escalation_events").insert({**event, "escalation_id": esc_id}).execute()
+            return _persisted_escalations(client, esc_id)[0]
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise _supabase_failure("update the escalation", exc)
+
+    for esc in _synthetic_escalations:
+        if esc["id"] == esc_id:
+            esc.update(changes)
+            esc["events"].append(event)
+            return esc
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
+
+def _thread_event(event_type: str, actor: User, message: str, now_str: str) -> Dict[str, Any]:
+    return {
+        "id": str(uuid.uuid4()),
+        "event_type": event_type,
+        "actor_name": actor.full_name,
+        "actor_role": actor.role,
+        "message": message,
+        "created_at": now_str
+    }
+
+# ==============================================================================
 # ENDPOINTS
 # ==============================================================================
 
@@ -538,7 +613,7 @@ def list_escalations(
     - Other roles see only their own submitted reports
     """
     results = []
-    for esc in _synthetic_escalations:
+    for esc in _all_escalations():
         # RLS Filtering
         if current_user.role in ["Admin", "Principal Investigator"]:
             allow = True
@@ -582,6 +657,30 @@ def create_escalation(
     if current_user.role in ["Principal Investigator", "Admin"]:
         raise HTTPException(status_code=403, detail="Principal Investigator and Admin are recipients and cannot create escalations.")
 
+    client = get_supabase_admin_client()
+    if client:
+        try:
+            sender = client.from_("profiles").select("id").eq("email", current_user.email.lower()).limit(1).execute()
+            saved = client.from_("escalations").insert({
+                "from_user": sender.data[0]["id"] if sender.data else None,
+                "from_name": current_user.full_name,
+                "from_role": current_user.role,
+                "study_id": req.study_id,
+                "site_id": current_user.site_id,
+                "subject_code": req.subject_code,
+                "category": req.category,
+                "urgency": req.urgency,
+                "summary": req.summary,
+                "details": req.details,
+                "attachment_url": req.attachment_url or req.attachment_name,
+                "status": "Sent",
+                "created_at": now_str
+            }).execute()
+        except Exception as exc:
+            raise _supabase_failure("save the escalation", exc)
+        esc_id = saved.data[0]["id"]
+    notifications_before = len(_notifications)
+
     new_esc = {
         "id": esc_id,
         "from_user": current_user.email,
@@ -614,7 +713,8 @@ def create_escalation(
             }
         ]
     }
-    _synthetic_escalations.insert(0, new_esc)
+    if not client:
+        _synthetic_escalations.insert(0, new_esc)
 
     # 1. Notify PI and Admin
     for target in ["Principal Investigator", "Admin"]:
@@ -672,6 +772,15 @@ def create_escalation(
             "created_at": now_str
         })
 
+    if client:
+        # Move the thread and the alerts raised above out of memory and into Supabase
+        new_notifications = [_notifications.pop(0) for _ in range(len(_notifications) - notifications_before)]
+        try:
+            client.from_("escalation_events").insert([{**ev, "escalation_id": esc_id} for ev in new_esc["events"]]).execute()
+            client.from_("notifications").insert([{k: v for k, v in n.items() if k != "id"} for n in new_notifications]).execute()
+        except Exception as exc:
+            raise _supabase_failure("save the escalation thread", exc)
+
     # 4. Audit Log
     log_audit_event(
         db=db,
@@ -689,154 +798,130 @@ def create_escalation(
 
 @router.post("/{esc_id}/acknowledge")
 def acknowledge_escalation(esc_id: str, req: EscalationAcknowledgeIn, request: Request, current_user: User = Depends(require_role(["Admin", "Principal Investigator"])), db: Session = Depends(get_db)):
-    req.actor_name = current_user.full_name
-    req.actor_role = current_user.role
-    for esc in _synthetic_escalations:
-        if esc["id"] == esc_id:
-            now_str = datetime.now(timezone.utc).isoformat()
-            esc["status"] = "Acknowledged"
-            esc["acknowledged_by"] = f"{req.actor_name} ({req.actor_role})"
-            esc["acknowledged_at"] = now_str
-            msg = f"Acknowledged by {req.actor_name} ({req.actor_role})."
-            if req.notes:
-                msg += f" Note: {req.notes}"
-            esc["events"].append({
-                "id": str(uuid.uuid4()),
-                "event_type": "acknowledged",
-                "actor_name": req.actor_name,
-                "actor_role": req.actor_role,
-                "message": msg,
-                "created_at": now_str
-            })
-            log_audit_event(
-                db=db,
-                user_id=None,
-                user_email=req.actor_name,
-                role=req.actor_role,
-                ip_address=request.client.host if request.client else "127.0.0.1",
-                action="ESCALATION_ACKNOWLEDGED",
-                entity_type="Escalation",
-                entity_id=esc_id,
-                details=f"Escalation acknowledged by {req.actor_name}."
-            )
-            return esc
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
+    now_str = datetime.now(timezone.utc).isoformat()
+    actor = f"{current_user.full_name} ({current_user.role})"
+    msg = f"Acknowledged by {actor}."
+    if req.notes:
+        msg += f" Note: {req.notes}"
+    esc = _apply_escalation_change(
+        esc_id,
+        {"status": "Acknowledged", "acknowledged_by": actor, "acknowledged_at": now_str},
+        _thread_event("acknowledged", current_user, msg, now_str)
+    )
+    log_audit_event(
+        db=db,
+        user_id=None,
+        user_email=current_user.full_name,
+        role=current_user.role,
+        ip_address=request.client.host if request.client else "127.0.0.1",
+        action="ESCALATION_ACKNOWLEDGED",
+        entity_type="Escalation",
+        entity_id=esc_id,
+        details=f"Escalation acknowledged by {current_user.full_name}."
+    )
+    return esc
 
 @router.post("/{esc_id}/reply")
 def reply_escalation(esc_id: str, req: EscalationReplyIn, request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    req.actor_name = current_user.full_name
-    req.actor_role = current_user.role
-    for esc in _synthetic_escalations:
-        if esc["id"] == esc_id:
-            now_str = datetime.now(timezone.utc).isoformat()
-            esc["events"].append({
-                "id": str(uuid.uuid4()),
-                "event_type": "reply",
-                "actor_name": req.actor_name,
-                "actor_role": req.actor_role,
-                "message": req.message,
-                "created_at": now_str
-            })
-            log_audit_event(
-                db=db,
-                user_id=None,
-                user_email=req.actor_name,
-                role=req.actor_role,
-                ip_address=request.client.host if request.client else "127.0.0.1",
-                action="ESCALATION_REPLIED",
-                entity_type="Escalation",
-                entity_id=esc_id,
-                details=f"Reply posted by {req.actor_name} ({req.actor_role}): {req.message[:50]}"
-            )
-            return esc
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
+    now_str = datetime.now(timezone.utc).isoformat()
+    esc = _apply_escalation_change(esc_id, {}, _thread_event("reply", current_user, req.message, now_str))
+    log_audit_event(
+        db=db,
+        user_id=None,
+        user_email=current_user.full_name,
+        role=current_user.role,
+        ip_address=request.client.host if request.client else "127.0.0.1",
+        action="ESCALATION_REPLIED",
+        entity_type="Escalation",
+        entity_id=esc_id,
+        details=f"Reply posted by {current_user.full_name} ({current_user.role}): {req.message[:50]}"
+    )
+    return esc
 
 @router.post("/{esc_id}/assign")
 def assign_escalation(esc_id: str, req: EscalationAssignIn, request: Request, current_user: User = Depends(require_role(["Admin", "Principal Investigator"])), db: Session = Depends(get_db)):
-    req.actor_name = current_user.full_name
-    req.actor_role = current_user.role
-    for esc in _synthetic_escalations:
-        if esc["id"] == esc_id:
-            now_str = datetime.now(timezone.utc).isoformat()
-            esc["assigned_to"] = req.assign_to
-            esc["status"] = "In progress"
-            msg = f"Assigned to {req.assign_to} by {req.actor_name} ({req.actor_role})."
-            if req.notes:
-                msg += f" Instructions: {req.notes}"
-            esc["events"].append({
-                "id": str(uuid.uuid4()),
-                "event_type": "assigned",
-                "actor_name": req.actor_name,
-                "actor_role": req.actor_role,
-                "message": msg,
-                "created_at": now_str
-            })
-            log_audit_event(
-                db=db,
-                user_id=None,
-                user_email=req.actor_name,
-                role=req.actor_role,
-                ip_address=request.client.host if request.client else "127.0.0.1",
-                action="ESCALATION_ASSIGNED",
-                entity_type="Escalation",
-                entity_id=esc_id,
-                details=f"Assigned to {req.assign_to}."
-            )
-            return esc
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
+    now_str = datetime.now(timezone.utc).isoformat()
+    msg = f"Assigned to {req.assign_to} by {current_user.full_name} ({current_user.role})."
+    if req.notes:
+        msg += f" Instructions: {req.notes}"
+    esc = _apply_escalation_change(
+        esc_id,
+        {"assigned_to": req.assign_to, "status": "In progress"},
+        _thread_event("assigned", current_user, msg, now_str)
+    )
+    log_audit_event(
+        db=db,
+        user_id=None,
+        user_email=current_user.full_name,
+        role=current_user.role,
+        ip_address=request.client.host if request.client else "127.0.0.1",
+        action="ESCALATION_ASSIGNED",
+        entity_type="Escalation",
+        entity_id=esc_id,
+        details=f"Assigned to {req.assign_to}."
+    )
+    return esc
 
 @router.post("/{esc_id}/resolve")
 def resolve_escalation(esc_id: str, req: EscalationResolveIn, request: Request, current_user: User = Depends(require_role(["Admin", "Principal Investigator"])), db: Session = Depends(get_db)):
-    req.actor_name = current_user.full_name
-    req.actor_role = current_user.role
-    for esc in _synthetic_escalations:
-        if esc["id"] == esc_id:
-            now_str = datetime.now(timezone.utc).isoformat()
-            esc["status"] = "Resolved"
-            esc["resolved_at"] = now_str
-            esc["resolution_notes"] = req.resolution_notes
-            esc["events"].append({
-                "id": str(uuid.uuid4()),
-                "event_type": "resolved",
-                "actor_name": req.actor_name,
-                "actor_role": req.actor_role,
-                "message": f"Marked as Resolved by {req.actor_name} ({req.actor_role}). Resolution: {req.resolution_notes}",
-                "created_at": now_str
-            })
-            log_audit_event(
-                db=db,
-                user_id=None,
-                user_email=req.actor_name,
-                role=req.actor_role,
-                ip_address=request.client.host if request.client else "127.0.0.1",
-                action="ESCALATION_RESOLVED",
-                entity_type="Escalation",
-                entity_id=esc_id,
-                details=f"Resolved by {req.actor_name}. Notes: {req.resolution_notes[:60]}"
-            )
-            return esc
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Escalation not found.")
+    now_str = datetime.now(timezone.utc).isoformat()
+    esc = _apply_escalation_change(
+        esc_id,
+        {"status": "Resolved", "resolved_at": now_str, "resolution_notes": req.resolution_notes},
+        _thread_event(
+            "resolved", current_user,
+            f"Marked as Resolved by {current_user.full_name} ({current_user.role}). Resolution: {req.resolution_notes}",
+            now_str
+        )
+    )
+    log_audit_event(
+        db=db,
+        user_id=None,
+        user_email=current_user.full_name,
+        role=current_user.role,
+        ip_address=request.client.host if request.client else "127.0.0.1",
+        action="ESCALATION_RESOLVED",
+        entity_type="Escalation",
+        entity_id=esc_id,
+        details=f"Resolved by {current_user.full_name}. Notes: {req.resolution_notes[:60]}"
+    )
+    return esc
 
 @router.get("/notifications")
 def get_notifications(role: Optional[str] = None, current_user: User = Depends(get_current_user)):
     """Returns unread and recent notifications for the specified role."""
     role = current_user.role
+    notifications = _notifications
+    client = get_supabase_admin_client()
+    if client:
+        try:
+            notifications = client.from_("notifications").select("*").order("created_at", desc=True).execute().data + _notifications
+        except Exception as exc:
+            raise _supabase_failure("load notifications", exc)
     return [
-        n for n in _notifications
+        n for n in notifications
         if n["target_role"].lower() == role.lower() or (role in ["Admin", "Principal Investigator"] and n["type"].startswith("critical"))
     ]
 
 @router.post("/notifications/{notif_id}/read")
 def mark_notification_read(notif_id: str, current_user: User = Depends(get_current_user)):
+    client = get_supabase_admin_client()
+    if client and _is_uuid(notif_id):
+        try:
+            query = client.from_("notifications").update({"is_read": True}).eq("id", notif_id)
+            if current_user.role not in ["Admin", "Principal Investigator"]:
+                query = query.eq("target_role", current_user.role)
+            updated = query.execute().data
+        except Exception as exc:
+            raise _supabase_failure("update the notification", exc)
+        if updated:
+            return {"success": True}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found.")
     for n in _notifications:
         if n["id"] == notif_id and (n["target_role"] == current_user.role or current_user.role in ["Admin", "Principal Investigator"]):
             n["is_read"] = True
             return {"success": True}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found.")
-
-# ==============================================================================
-# COMPREHENSIVE CLINICAL TRIAL DATASET (6 Studies, 4 Sites, 150 Subject Codes, 60 AEs)
-# ==============================================================================
 
 @router.get("/study-data")
 def get_study_data(current_user: User = Depends(get_current_user)):
