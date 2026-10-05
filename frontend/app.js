@@ -1810,6 +1810,12 @@ async function submitNewSubmission(event) {
   const status = document.getElementById("new-submission-status");
   if (!user || !form || !status) return;
 
+  // Reports cannot be deleted once stored, so never let a double click send two
+  if (form.dataset.sending === "true") return;
+  form.dataset.sending = "true";
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+
   const payload = {
     from_user: user.email,
     from_name: user.name || user.email.split("@")[0],
@@ -1869,6 +1875,9 @@ async function submitNewSubmission(event) {
     status.textContent = error.message || "Submission failed. Please try again.";
     status.classList.remove("hidden");
     showToast(status.textContent);
+  } finally {
+    form.dataset.sending = "false";
+    if (submitButton) submitButton.disabled = false;
   }
 }
 

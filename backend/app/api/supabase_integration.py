@@ -308,6 +308,16 @@ def login_user(req: LoginIn, request: Request, db: Session = Depends(get_db)):
             )
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account is not approved for that role.")
         authenticated = True
+        # Use the seeded profile's real name and site so saved records are not attributed to "Pv" / "Coordinator"
+        client = get_supabase_admin_client()
+        if client:
+            try:
+                seeded = client.from_("profiles").select("full_name, site").eq("email", email_lower).limit(1).execute()
+                if seeded.data:
+                    principal_name = seeded.data[0].get("full_name") or principal_name
+                    principal_site = seeded.data[0].get("site") or principal_site
+            except Exception as exc:
+                print(f"[Supabase Notice] Could not load demo profile for {email_lower}: {exc}")
     else:
         # Check standard Supabase Auth
         client = get_supabase_admin_client()
