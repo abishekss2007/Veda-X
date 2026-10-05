@@ -752,6 +752,7 @@ function completeLogin(session) {
   const slug = ROLE_TO_SLUG[selectedRole] || "coordinator";
   window.location.hash = `#dashboard/${slug}`;
   if (window.ChartDataHelper) ChartDataHelper.fetchLatestData();
+  loadSavedSubmissions();
   showToast(`Welcome, ${account.name}. Signed into ${selectedRole} workspace.`);
 }
 
@@ -2405,6 +2406,25 @@ startRealtimeEscalationSync();
 // ==============================================================================
 // "MY SUBMISSIONS" & "TEAM ACTIVITY"
 // ==============================================================================
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Pulls the records saved in Supabase so they survive a refresh; built-in sample rows stay below them
+async function loadSavedSubmissions() {
+  try {
+    const response = await fetch("/api/supabase/submissions", { credentials: "same-origin" });
+    const saved = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(saved.detail || "Unable to load saved submissions.");
+    const savedIds = new Set(saved.map(s => s.id));
+    appState.submissions = [...saved, ...appState.submissions.filter(s => !savedIds.has(s.id))];
+    loadSubmissionsUI();
+    if (document.getElementById("filter-team-role")) filterTeamActivityUI();
+  } catch (err) {
+    showToast(`Saved submissions not loaded: ${err.message}`);
+  }
+}
+
 function loadSubmissionsUI() {
   const tbody = document.getElementById("tbody-my-submissions");
   if (!tbody) return;
@@ -2422,13 +2442,13 @@ function loadSubmissionsUI() {
     const statusBadge = getStatusBadge(s.status);
     const versionCount = s.versions ? s.versions.length : 0;
     const verifiedBy = s.verifications && s.verifications.length > 0 
-      ? `<span class="badge badge-green">${s.verifications[0].verified_by}</span>` 
+      ? `<span class="badge badge-green">${escapeHtml(s.verifications[0].verified_by)}</span>` 
       : '<span style="color: var(--text-dim); font-size: 0.8rem;">Pending</span>';
 
     return `
       <tr>
-        <td><strong>${s.title}</strong></td>
-        <td><span class="badge badge-secondary">${s.type}</span></td>
+        <td><strong>${escapeHtml(s.title)}</strong></td>
+        <td><span class="badge badge-secondary">${escapeHtml(s.type)}</span></td>
         <td style="font-size: 0.82rem; color: var(--text-muted);">${s.created_at.slice(0, 10)}</td>
         <td>${statusBadge}</td>
         <td><span class="badge badge-info">${versionCount} Version(s)</span></td>
@@ -2463,9 +2483,9 @@ function filterTeamActivityUI() {
 
   tbody.innerHTML = list.map(s => `
     <tr>
-      <td><strong>${s.title}</strong></td>
-      <td>${s.owner_name} <br><span class="badge badge-secondary">${s.role}</span></td>
-      <td><span class="badge badge-secondary">${s.type}</span></td>
+      <td><strong>${escapeHtml(s.title)}</strong></td>
+      <td>${escapeHtml(s.owner_name)} <br><span class="badge badge-secondary">${escapeHtml(s.role)}</span></td>
+      <td><span class="badge badge-secondary">${escapeHtml(s.type)}</span></td>
       <td>${s.created_at.slice(0, 10)}</td>
       <td>${getStatusBadge(s.status)}</td>
       <td>
@@ -2671,13 +2691,13 @@ document.getElementById("form-create-submission").addEventListener("submit", asy
     verifications: []
   };
 
-  // Sync to Backend endpoint
+  // Save to Backend endpoint (owner is taken from the signed-in session)
   try {
-    await fetch("/api/supabase/submissions", {
+    const response = await fetch("/api/supabase/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({
-        owner_id: newSub.owner_id,
         role: newSub.role,
         type: newSub.type,
         title: newSub.title,
@@ -2685,8 +2705,14 @@ document.getElementById("form-create-submission").addEventListener("submit", asy
         status: newSub.status
       })
     });
+    const saved = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(saved.detail || "Submission could not be saved.");
+    // Keep the database id so later edits and verification reach the same row
+    newSub.id = saved.id || newSub.id;
+    newSub.owner_id = saved.owner_id || newSub.owner_id;
   } catch (err) {
-    console.warn("Backend sync notice:", err);
+    showToast(`Submission not saved: ${err.message}`);
+    return;
   }
 
   appState.submissions.unshift(newSub);
@@ -2721,7 +2747,31 @@ document.getElementById("form-edit-submission").addEventListener("submit", async
   }
 
   const updatedPayload = { notes: document.getElementById("edit-sub-notes").value };
-  
+  const updatedTitle = document.getElementById("edit-sub-title").value;
+
+  // Save to Backend first so the screen never shows an edit the database rejected
+  try {
+    const response = await fetch(`/api/supabase/submissions/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        title: updatedTitle,
+        payload: updatedPayload,
+        reason,
+        changed_by: appState.currentUser?.name || "Investigator"
+      })
+    });
+    // Built-in sample rows exist only in the browser, so a 404 for them is expected
+    if (!response.ok && response.status !== 404) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.detail || "Update could not be saved.");
+    }
+  } catch (err) {
+    showToast(`Update not saved: ${err.message}`);
+    return;
+  }
+
   // Record version snapshot (GCP-ASU requirement: old value, new value, reason, who, when)
   sub.versions.push({
     old_value: sub.payload,
@@ -2731,25 +2781,9 @@ document.getElementById("form-edit-submission").addEventListener("submit", async
     changed_at: new Date().toISOString()
   });
 
-  sub.title = document.getElementById("edit-sub-title").value;
+  sub.title = updatedTitle;
   sub.payload = updatedPayload;
   sub.updated_at = new Date().toISOString();
-
-  // Sync with Backend
-  try {
-    await fetch(`/api/supabase/submissions/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: sub.title,
-        payload: sub.payload,
-        reason,
-        changed_by: appState.currentUser?.name || "Investigator"
-      })
-    });
-  } catch (err) {
-    console.warn("Backend sync notice:", err);
-  }
 
   closeModal("modal-edit-submission");
   loadSubmissionsUI();
@@ -2769,18 +2803,13 @@ document.getElementById("form-verify-submission").addEventListener("submit", asy
   if (!sub) return;
 
   const note = document.getElementById("verify-note").value;
-  sub.status = "Verified";
-  sub.verifications.push({
-    verified_by: appState.currentUser?.name || "Principal Investigator",
-    verified_at: new Date().toISOString(),
-    note
-  });
 
-  // Sync with Backend
+  // Save to Backend first so the screen never shows a sign-off the database rejected
   try {
-    await fetch(`/api/supabase/submissions/${id}/verify`, {
+    const response = await fetch(`/api/supabase/submissions/${id}/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({
         verified_by: appState.currentUser?.name || "Principal Investigator",
         verifier_role: appState.activeRole || "Principal Investigator",
@@ -2788,9 +2817,22 @@ document.getElementById("form-verify-submission").addEventListener("submit", asy
         note
       })
     });
+    // Built-in sample rows exist only in the browser, so a 404 for them is expected
+    if (!response.ok && response.status !== 404) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.detail || "Verification could not be saved.");
+    }
   } catch (err) {
-    console.warn("Backend sync notice:", err);
+    showToast(`Verification not saved: ${err.message}`);
+    return;
   }
+
+  sub.status = "Verified";
+  sub.verifications.push({
+    verified_by: appState.currentUser?.name || "Principal Investigator",
+    verified_at: new Date().toISOString(),
+    note
+  });
 
   closeModal("modal-verify-submission");
   loadSubmissionsUI();
@@ -2806,12 +2848,28 @@ function setupSessionTimeout() {
   const countdownSpan = document.getElementById("inactivity-countdown");
 
   // Reset timer on user interaction
+  let activeSinceRenewal = false;
   const resetTimer = () => {
     if (appState.isLoggedIn) {
       appState.sessionSecondsLeft = 15 * 60;
+      activeSinceRenewal = true;
       warningBanner.classList.add("hidden");
     }
   };
+
+  // The server cookie lasts 15 minutes; renew it while the user is active so it
+  // does not expire underneath a session this timer still counts as live
+  setInterval(async () => {
+    if (!appState.isLoggedIn || !activeSinceRenewal) return;
+    activeSinceRenewal = false;
+    try {
+      const response = await fetch("/api/auth/session/renew", { method: "POST", credentials: "same-origin" });
+      if (response.status === 401) {
+        signOut();
+        showToast("Your session has expired. Please sign in again.");
+      }
+    } catch (error) {}
+  }, 5 * 60 * 1000);
 
   window.addEventListener("mousemove", resetTimer);
   window.addEventListener("keydown", resetTimer);

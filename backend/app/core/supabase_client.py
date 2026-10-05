@@ -45,6 +45,18 @@ def get_supabase_admin_client() -> Optional[Client]:
         print(f"[Supabase Init Warning] Could not connect to Supabase: {exc}")
         return None
 
+def new_supabase_auth_client() -> Optional[Client]:
+    """
+    Returns a throwaway client for user sign-in checks.
+    Signing in on the shared admin client would swap its secret key for the
+    user's session, making every later backend query subject to RLS.
+    """
+    url = get_supabase_url()
+    auth_key = get_supabase_publishable_key() or get_supabase_secret_key()
+    if not url or not auth_key:
+        return None
+    return create_client(url, auth_key)
+
 def is_supabase_enabled() -> bool:
     url = get_supabase_url()
     auth_key = get_supabase_secret_key() or get_supabase_publishable_key()

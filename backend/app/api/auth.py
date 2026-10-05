@@ -407,6 +407,32 @@ def logout(
     return {"message": "Logged out successfully. Session destroyed."}
 
 
+@router.post("/session/renew")
+def renew_session(
+    request: Request,
+    response: Response,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Sliding session: reissues the 15-minute access cookie while the user is active,
+    so only genuine inactivity ends the session.
+    """
+    token = request.cookies.get("ayur_access_token")
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No session cookie to renew.")
+    claims = decode_token(token)
+    claims.pop("exp", None)
+    response.set_cookie(
+        key="ayur_access_token",
+        value=create_access_token(claims),
+        httponly=True,
+        secure=request.url.scheme == "https" or claims.get("principal_type") != "demo",
+        samesite="Strict",
+        max_age=security_settings.ACCESS_TOKEN_LIFETIME_SECONDS
+    )
+    return {"renewed": True}
+
+
 @router.get("/me", response_model=UserOut)
 def get_current_user_profile(current_user: User = Depends(get_current_user)):
     return current_user

@@ -1,12 +1,13 @@
 import os
 import secrets
+import uuid
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from pydantic import BaseModel, EmailStr, Field
 
-from ..core.supabase_client import get_supabase_admin_client, is_supabase_enabled, get_supabase_url
-from ..core.security import create_access_token
+from ..core.supabase_client import get_supabase_admin_client, new_supabase_auth_client, is_supabase_enabled, get_supabase_url
+from ..core.security import create_access_token, decode_token
 from ..core.audit import log_audit_event
 from ..db.database import get_db
 from ..db.models import User
@@ -85,7 +86,7 @@ class VerifyOTPIn(BaseModel):
     otp_code: str = Field(..., min_length=6, max_length=6)
 
 class SubmissionCreateIn(BaseModel):
-    owner_id: str
+    owner_id: Optional[str] = None  # Ignored when Supabase is active: owner comes from the session
     role: str
     study_id: str = "AYUR-CT-2026-001"
     type: str # form, document, consent, ae_report, visit_note, prakriti_assessment
@@ -105,6 +106,61 @@ class SubmissionVerifyIn(BaseModel):
     verifier_role: str
     verifier_email: str
     note: str = Field(..., min_length=3)
+
+def _session_claims(request: Request) -> Dict[str, Any]:
+    """Claims of the signed-in user, read from the session cookie (empty if signed out)."""
+    token = request.cookies.get("ayur_access_token")
+    if not token:
+        return {}
+    payload = decode_token(token)
+    return payload if payload.get("type") == "access" else {}
+
+def _session_email(request: Request) -> Optional[str]:
+    email = _session_claims(request).get("email")
+    return email.lower() if email else None
+
+# Mirrors the SELECT policies on public.submissions
+_ROLES_READING_ALL_SUBMISSIONS = [
+    "Admin", "Principal Investigator", "Monitor", "Auditor / Regulator", "Institution Leadership"
+]
+
+def _present_submission(row: Dict[str, Any], names: Dict[str, str]) -> Dict[str, Any]:
+    """Shapes a Supabase row like the records the frontend renders (names instead of profile ids)."""
+    versions = sorted(row.pop("submission_versions", None) or [], key=lambda v: v["changed_at"])
+    verifications = sorted(row.pop("verifications", None) or [], key=lambda v: v["verified_at"], reverse=True)
+    row["owner_name"] = names.get(row["owner_id"], "Unknown user")
+    row["versions"] = [{**v, "who": names.get(v["changed_by"], "Unknown user")} for v in versions]
+    row["verifications"] = [{**v, "verified_by": names.get(v["verified_by"], "Unknown user")} for v in verifications]
+    return row
+
+def _profile_id_for_email(client, email: Optional[str]) -> Optional[str]:
+    """submissions.owner_id is a UUID FK to profiles.id, so resolve the real profile row."""
+    if not email:
+        return None
+    res = client.from_("profiles").select("id").eq("email", email.lower()).limit(1).execute()
+    return res.data[0]["id"] if res.data else None
+
+def _require_profile_id(client, email: Optional[str]) -> str:
+    if not email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Please sign in before saving records.")
+    profile_id = _profile_id_for_email(client, email)
+    if not profile_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"No Supabase profile exists for {email}. Seed the demo users or register this account first."
+        )
+    return profile_id
+
+def _is_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+        return True
+    except ValueError:
+        return False
+
+def _supabase_failure(action: str, exc: Exception) -> HTTPException:
+    print(f"[Supabase Error] {action}: {exc}")
+    return HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Supabase could not {action}: {exc}")
 
 @router.get("/status")
 def get_supabase_status():
@@ -257,7 +313,7 @@ def login_user(req: LoginIn, request: Request, db: Session = Depends(get_db)):
         client = get_supabase_admin_client()
         if client:
             try:
-                auth_res = client.auth.sign_in_with_password({"email": req.email, "password": req.password})
+                auth_res = new_supabase_auth_client().auth.sign_in_with_password({"email": req.email, "password": req.password})
                 profile_res = client.from_("profiles").select("full_name, role, site, status").eq("id", str(auth_res.user.id)).maybe_single().execute()
                 profile = profile_res.data
                 if not profile or profile.get("status") != "approved":
@@ -368,31 +424,38 @@ def verify_otp_endpoint(req: VerifyOTPIn, request: Request, response: Response, 
     }
 
 @router.get("/submissions")
-def get_submissions(owner_id: Optional[str] = None, role: Optional[str] = None):
+def get_submissions(request: Request, owner_id: Optional[str] = None, role: Optional[str] = None):
     client = get_supabase_admin_client()
     if client:
         try:
+            # Visibility is decided by the session, never by the query string
+            claims = _session_claims(request)
+            profile_id = _require_profile_id(client, _session_email(request))
             q = client.from_("submissions").select("*, submission_versions(*), verifications(*)")
-            if owner_id and role not in ["Admin", "Principal Investigator"]:
-                q = q.eq("owner_id", owner_id)
+            if claims.get("role") not in _ROLES_READING_ALL_SUBMISSIONS:
+                q = q.eq("owner_id", profile_id)
             res = q.order("created_at", desc=True).execute()
-            if res.data:
-                return res.data
-        except Exception:
-            pass
-    
+            profiles = client.from_("profiles").select("id, full_name").execute()
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise _supabase_failure("load submissions", exc)
+        names = {p["id"]: p["full_name"] for p in profiles.data}
+        return [_present_submission(row, names) for row in res.data]
+
     # Respect Row Level Security in fallback mock mode
     if owner_id and role not in ["Admin", "Principal Investigator"]:
         return [s for s in _mock_submissions if s.get("owner_id") == owner_id]
     return _mock_submissions
 
 @router.post("/submissions", status_code=status.HTTP_201_CREATED)
-def create_submission(req: SubmissionCreateIn):
+def create_submission(req: SubmissionCreateIn, request: Request):
     client = get_supabase_admin_client()
     if client:
         try:
+            owner_id = _require_profile_id(client, _session_email(request))
             res = client.from_("submissions").insert({
-                "owner_id": req.owner_id,
+                "owner_id": owner_id,
                 "role": req.role,
                 "study_id": req.study_id,
                 "type": req.type,
@@ -400,10 +463,11 @@ def create_submission(req: SubmissionCreateIn):
                 "payload": req.payload,
                 "status": req.status
             }).execute()
-            if res.data:
-                return res.data[0]
+        except HTTPException:
+            raise
         except Exception as exc:
-            print(f"[Supabase Notice] Remote insert fell back to local store: {exc}")
+            raise _supabase_failure("save the submission", exc)
+        return res.data[0]
 
     new_entry = {
         "id": f"sub-{len(_mock_submissions) + 101}",
@@ -425,6 +489,32 @@ def create_submission(req: SubmissionCreateIn):
 
 @router.put("/submissions/{sub_id}")
 def update_submission(sub_id: str, req: SubmissionUpdateIn):
+    client = get_supabase_admin_client()
+    if client and _is_uuid(sub_id):
+        try:
+            current = client.from_("submissions").select("status, payload").eq("id", sub_id).limit(1).execute()
+            if not current.data:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found.")
+            row = current.data[0]
+            if row["status"] not in ["Draft", "Needs correction"]:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot edit submission in '{row['status']}' status.")
+            changes: Dict[str, Any] = {"payload": req.payload}
+            if req.title:
+                changes["title"] = req.title
+            if req.status:
+                changes["status"] = req.status
+            res = client.from_("submissions").update(changes).eq("id", sub_id).execute()
+            # The DB trigger snapshots the version with a default reason; record the user's reason on it
+            if row["payload"] != req.payload or (req.status and req.status != row["status"]):
+                latest = client.from_("submission_versions").select("id").eq("submission_id", sub_id).order("changed_at", desc=True).limit(1).execute()
+                if latest.data:
+                    client.from_("submission_versions").update({"reason": req.reason}).eq("id", latest.data[0]["id"]).execute()
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise _supabase_failure("update the submission", exc)
+        return res.data[0]
+
     for s in _mock_submissions:
         if s["id"] == sub_id:
             if s["status"] not in ["Draft", "Needs correction"]:
@@ -445,7 +535,32 @@ def update_submission(sub_id: str, req: SubmissionUpdateIn):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found.")
 
 @router.post("/submissions/{sub_id}/verify")
-def verify_submission(sub_id: str, req: SubmissionVerifyIn):
+def verify_submission(sub_id: str, req: SubmissionVerifyIn, request: Request):
+    client = get_supabase_admin_client()
+    if client and _is_uuid(sub_id):
+        try:
+            verifier_id = _require_profile_id(client, _session_email(request))
+            res = client.from_("submissions").update({"status": "Verified"}).eq("id", sub_id).execute()
+            if not res.data:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found.")
+            # The DB trigger attributes the status-change snapshot to the owner; credit the verifier instead
+            latest = client.from_("submission_versions").select("id, new_value, old_value").eq("submission_id", sub_id).order("changed_at", desc=True).limit(1).execute()
+            if latest.data and latest.data[0]["new_value"].get("status") == "Verified" and latest.data[0]["old_value"].get("status") != "Verified":
+                client.from_("submission_versions").update({
+                    "changed_by": verifier_id,
+                    "reason": f"Verified: {req.note}"
+                }).eq("id", latest.data[0]["id"]).execute()
+            client.from_("verifications").insert({
+                "submission_id": sub_id,
+                "verified_by": verifier_id,
+                "note": req.note
+            }).execute()
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise _supabase_failure("verify the submission", exc)
+        return res.data[0]
+
     for s in _mock_submissions:
         if s["id"] == sub_id:
             s["status"] = "Verified"

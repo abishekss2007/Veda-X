@@ -11,6 +11,10 @@ backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
+# Tests must never read or write the real Supabase project configured in backend/.env
+for _key in ("SUPABASE_URL", "SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_PUBLISHABLE_KEY", "SUPABASE_ANON_KEY"):
+    os.environ[_key] = ""
+
 from app.main import app, seed_synthetic_data
 from app.db.database import Base, get_db
 

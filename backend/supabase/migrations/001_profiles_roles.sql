@@ -70,7 +70,7 @@ BEGIN
         NEW.email,
         NEW.raw_user_meta_data->>'phone',
         -- Default to safe role; Admin and PI must be verified/approved by administrator
-        COALESCE((NEW.raw_user_meta_data->>'role')::user_role_type, 'Research Coordinator'),
+        COALESCE((NEW.raw_user_meta_data->>'role')::public.user_role_type, 'Research Coordinator'),
         COALESCE(NEW.raw_user_meta_data->>'site', 'SITE-01'),
         'pending',
         NOW(),
@@ -82,7 +82,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Attach trigger to auth.users
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
