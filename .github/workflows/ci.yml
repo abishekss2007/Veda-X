@@ -65,7 +65,7 @@ jobs:
       - name: Verify critical static assets exist
         run: |
           test -f frontend/index.html || { echo "Missing frontend/index.html"; exit 1; }
-          test -f frontend/aiia-logo.jpg || { echo "Missing frontend/aiia-logo.jpg"; exit 1; }
+          test -f frontend/aiia-logo-v2.jpg || { echo "Missing frontend/aiia-logo-v2.jpg"; exit 1; }
           echo "Frontend assets verified."
 
   security-scan:
